@@ -4,6 +4,7 @@
 dist
 MANIFEST
 anouman.egg-info*
+scratch
 build/*
 buildenv/*
 buildenv/lib/python2.7/site-packages/easy-install.pth
