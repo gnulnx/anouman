@@ -14,14 +14,12 @@ test -d $RUNDIR || mkdir -p $RUNDIR
 {% endif %}
 
 # Start gunicorn
-exec {{GUNICORN}} {{DJANGO_WSGI_MODULE}}:application 
-  --name {{NAME}} 
-  --workers {{NUM_WORKERS}} 
-  --user={{USER}} 
-  --group={{GROUP}} 
-  --log-level=debug 
-  {% if SOCKFILE %}--bind=unix:{{SOCKFILE}}  {% endif %}
-  {% if BIND %}--bind={{BIND}}{% endif %}
-  {% if DAEMON %} --daemon{% endif %}
+exec {{GUNICORN}} {{DJANGO_WSGI_MODULE}}:application \
+  --bind={{BIND}} \
+  --name {{NAME}} \
+  --workers {{NUM_WORKERS}} \
+  --user={{USER}} \
+  --log-level=debug  \
+  {% if DAEMON %} --daemon \{% endif %}
 
 echo "gunicorn start for site: {{NAME}}"

@@ -40,17 +40,26 @@ def get_settings(args):
           -- If not settings.py is found we throw an exception.
           -- If one settings.py is found we return it's path.
     """
+    settings_path=''
     if not args.settings:
         matches = find_file(args.django_project, 'settings.py')
         if len(matches) > 1:
             raise MultipleSettingError(matches)
         elif len(matches) == 0:
             raise NoSettingsError()
-        return matches[0]
+        settings_path= matches[0]
     elif not os.path.isfile(args.settings):
         raise NoSettingsError() 
     else:
-        return args.settings
+        settings_path = args.settings
+    
+    # We now have the path to the wsgi.py modules, but we need
+    # to convert it to python module format:  website.wsgi
+    tmp = settings_path.split( os.path.abspath(args.django_project) )
+    if len(tmp) == 2:
+        return tmp[1][1:].replace("/", ".").replace(".py", "")
+    else:
+        raise NoSettingsError( str(tmp) )
     
 def get_wsgi(args):
     """
@@ -79,7 +88,7 @@ def get_wsgi(args):
     else:
         wsgi_path = os.path.abspath( args.wsgi )
 
-    # We now have the path to th ewsgi.py modules, but we need
+    # We now have the path to the wsgi.py modules, but we need
     # to convert it to python module format:  website.wsgi
     tmp = wsgi_path.split( os.path.abspath(args.django_project) )
     if len(tmp) == 2:
@@ -96,7 +105,7 @@ def django_project(args):
         1)  A django settings.py file
         2)  A django project which is recursivly grepped for settings.py
     """
-    SETTINGS = os.path.abspath(get_settings(args))
+    SETTINGS = get_settings(args)
     WSGI = get_wsgi(args)
        
     BIN=os.path.abspath("%s/bin"%(args.virtualenv))
@@ -125,11 +134,17 @@ def django_project(args):
         'USER':getpass.getuser(),   
         'GROUP':getpass.getuser(),
         'GUNICORN':"%s/gunicorn"%(BIN),
-        'SOCKFILE':'/var/run/%s.sock'%(NAME),
         'DJANGODIR':os.path.abspath(args.django_project),
         'DJANGO_SETTINGS_MODULE':SETTINGS,
         'DJANGO_WSGI_MODULE':WSGI,
     }   
+    if args.bind:
+        context['BIND'] = args.bind
+    elif args.socket:
+        context['SOCKFILE'] = args.socket
+    else:
+        raise Exception("You must have either --bind or --socket")
+
     gunicorn_context.update(context) 
 
     with open(GUNICORN_START, 'w') as f:
