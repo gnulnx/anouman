@@ -4,7 +4,7 @@
 
 export DJANGO_SETTINGS_MODULE={{DJANGO_SETTINGS_MODULE}} 
 
-# Make sure your project is at the beggening of PYTHONPATH 
+# Make sure your project is at the beginning of PYTHONPATH 
 export PYTHONPATH={{DJANGODIR}}:$PYTHONPATH
 
 # Create the run directory if it doesn't exist
