@@ -1,0 +1,9 @@
+*.pyc
+*.pyo
+*.swp
+dist
+MANIFEST
+anouman.egg-info*
+build/*
+buildenv/*
+buildenv/lib/python2.7/site-packages/easy-install.pth
