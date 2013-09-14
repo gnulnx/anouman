@@ -72,12 +72,12 @@ for dirpath, dirnames, filenames in os.walk(anouman_dir):
         package_files.extend([os.path.join(path, f) for f in filenames])
 
 
-version = "0.1"
+version = "0.0.1"
 
 print find_packages()
 
 setup(
-    name='Dnginx',
+    name='anouman',
     version=version,
     author='John Furr',
     description=('rapidly create and deploy django --> gunicorn --> nginx project'),
@@ -88,7 +88,6 @@ setup(
     package_data=package_data,
     scripts=['anouman/bin/anouman-admin.py'],
     classifiers=[
-        'Development Status :: Beta',
         'Environment :: Web Environment',
     ],
     install_requires=[
