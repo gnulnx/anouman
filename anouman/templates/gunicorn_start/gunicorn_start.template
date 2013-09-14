@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Export your projects settings module
+
+export DJANGO_SETTINGS_MODULE={{DJANGO_SETTINGS_MODULE}} 
+
+# Make sure your project is at the beggening of PYTHONPATH 
+export PYTHONPATH={{DJANGODIR}}:$PYTHONPATH
+
+# Create the run directory if it doesn't exist
+{% if SOCKFILE %}
+RUNDIR=$(dirname {{SOCKFILE}})
+test -d $RUNDIR || mkdir -p $RUNDIR
+{% endif %}
+
+# Start gunicorn
+exec {{GUNICORN}} {{DJANGO_WSGI_MODULE}}:application 
+  --name {{NAME}} 
+  --workers {{NUM_WORKERS}} 
+  --user={{USER}} 
+  --group={{GROUP}} 
+  --log-level=debug 
+  {% if SOCKFILE %}--bind=unix:{{SOCKFILE}}  {% endif %}
+  {% if BIND %}--bind={{BIND}}{% endif %}
+  {% if DAEMON %} --daemon{% endif %}
+
+echo "gunicorn start for site: {{NAME}}"

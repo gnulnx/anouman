@@ -1,0 +1,33 @@
+#!/bin/bash
+
+
+############ YOU MIGHT BE ABLE TO SKIP THESE STEPS IF YOU USE ABSOLUTE PATHS  #################################
+# Change to the DJANGODIR
+cd {{DJANGODIR}}
+
+# source the virtualenv 'activate' file
+source {{VIRTUALENVDIR}}/{{NAME}}/bin/activate   # Assumes a symbolically linked virtualenv activate command
+################################################################################################################
+
+# Export your projects settings module
+export DJANGO_SETTINGS_MODULE={{DJANGO_SETTINGS_MODULE}}    # the settings file Django should use
+
+# Make sure your project is at the beggening of PYTHONPATH 
+export PYTHONPATH={{DJANGODIR}}:$PYTHONPATH
+
+# Create the run directory if it doesn't exist
+RUNDIR=$(dirname {{SOCKFILE}})
+test -d $RUNDIR || mkdir -p $RUNDIR
+
+# Start gunicorn
+exec {{VIRTUALENVDIR}}/{{NAME}}/bin/gunicorn {{DJANGO_WSGI_MODULE}}:application 
+  --name {{NAME}} 
+  --workers {{NUM_WORKERS}} 
+  --user={{USER}} 
+  --group={{GROUP}} 
+  --log-level=debug 
+  {% if SOCKFILE %}--bind=unix:{{SOCKFILE}}  {% endif %}
+  {% if BIND %}--bind={{BIND}}{% endif %}
+  {% if DAEMON %} --daemon{% endif %}
+
+echo "gunicorn start for site: {{NAME}}"

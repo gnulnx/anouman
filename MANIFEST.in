@@ -1,0 +1,6 @@
+include *.txt
+include *.md
+include *.template
+
+recursive-include anouman *
+recursive-include anouman/template/ *
