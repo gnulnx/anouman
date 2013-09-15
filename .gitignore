@@ -4,6 +4,7 @@
 dist
 MANIFEST
 anouman.egg-info*
+scratch/*
 scratch
 build/*
 buildenv/*
