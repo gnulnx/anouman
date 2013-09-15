@@ -75,6 +75,13 @@ def get_args():
         default=True,
     )
 
+    parser.add_argument('--mysql',
+        help='setup for mysql backed database',
+        dest='mysql',
+        action='store_true',
+        default=True,
+    )
+
     args = parser.parse_args()
 
     if args.django_project:

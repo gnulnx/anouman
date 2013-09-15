@@ -107,26 +107,54 @@ def django_project(args):
     """
     SETTINGS = get_settings(args)
     WSGI = get_wsgi(args)
-       
+    
     BIN=os.path.abspath("%s/bin"%(args.virtualenv))
     PIP="%s/pip"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
     GUNICORN_START="%s/gunicorn_start"%(BIN)
+    
+    """
+        Create a new virtual env for the project
+    """   
+    subprocess.call(["virtualenv", args.virtualenv])
 
     """
-        Install the base modules into the virtualenv
+        Install packages from current env
+        Into the new virtualenv
+        Lastly, pring some simple stats
     """
-    subprocess.call(["virtualenv", args.virtualenv])
-    subprocess.call([PIP, 'install', DJANGO_VERSION])
+    pkg_success = []
+    pgk_fails = []
+    for count, package in enumerate(
+        subprocess.check_output(['pip', 'freeze']).split("\n")
+    ):
+        print "Trying to install: ", package
+        if package:
+            try:
+                subprocess.call([PIP, "install", package])
+                pkg_success.append(package)
+            except ValueError as e:
+                print "error: ", e
+                pgk_fails.append(package)
+
+    print "Package Installation Results"
+    print "SUCCESS: %s" %(len(pkg_success))
+    print "FAIL:    %s" %(len(pgk_fails))
+    for f in pgk_fails:
+        print "\t*\t%s"%(f)
+
+    #   Install the latest gunicorn if the --gunicorn 
+    #   flag is set (It's default is set)
     if args.gunicorn:
         subprocess.call([PIP, "install", "gunicorn"])
 
+
     """
         Now we build up a context to apply to gunicorn_start.template.
-        The gunicorn_context is found in: anouman/templates/gunicorn_start/__init__.py
+        gunicorn_context located: anouman/templates/gunicorn_start/__init__.py
 
-        We the update gunicorn_context with out context and save the file
-        to {{virtualenv}}/bin/gunicorn.py
+        We the update gunicorn_context with outr context and save the file
+        to {{virtualenv}}/bin/gunicorn_start
     """
     NAME=os.path.basename(args.django_project)
     context = {
@@ -154,7 +182,10 @@ def django_project(args):
             ) 
         )
     # Set Permissions on the GUNICORN file    
-    os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
+    os.chmod(
+        GUNICORN_START, 
+        stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH
+    )
     print gunicorn_start( gunicorn_context )
 
     """
