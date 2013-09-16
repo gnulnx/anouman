@@ -20,6 +20,12 @@ def get_args():
         description=descr
     )
 
+    parser.add_argument('--domainname',
+        help='Enter the domain name of your website',
+        dest='domainname',
+        default="www.example.com",
+    )
+
     parser.add_argument('--startproject',
         help='Start a new django project with default option nginx/gunicorn',
         dest='project_name',

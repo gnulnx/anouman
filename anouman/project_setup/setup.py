@@ -108,7 +108,7 @@ def django_project(args):
     SETTINGS = get_settings(args)
     WSGI = get_wsgi(args)
     
-    BIN=os.path.abspath("%s/bin"%(args.virtualenv))
+    BIN=os.path.abspath("%s/bin"%(args.domainname))
     PIP="%s/pip"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
     GUNICORN_START="%s/gunicorn_start"%(BIN)
@@ -116,7 +116,7 @@ def django_project(args):
     """
         Create a new virtual env for the project
     """   
-    subprocess.call(["virtualenv", args.virtualenv])
+    subprocess.call(["virtualenv", args.domainname])
 
     """
         Install packages from current env
@@ -142,6 +142,14 @@ def django_project(args):
     print "FAIL:    %s" %(len(pgk_fails))
     for f in pgk_fails:
         print "\t*\t%s"%(f)
+
+    """
+        Now we copy your django project into the virtual env
+    """
+    print "Copying your source tree into the virtual env"
+    print "args.django_project: ", args.django_project
+    print "args.virtualenv: ", args.domainname
+    subprocess.call(['cp', '-r', args.django_project, args.domainname]) 
 
     #   Install the latest gunicorn if the --gunicorn 
     #   flag is set (It's default is set)
