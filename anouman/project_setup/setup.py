@@ -123,20 +123,23 @@ def django_project(args):
         Into the new virtualenv
         Lastly, pring some simple stats
     """
-    pkg_success = []
-    pgk_fails = []
-    for count, package in enumerate(
-        subprocess.check_output(['pip', 'freeze']).split("\n")
-    ):
-        print "Trying to install: ", package
-        if package:
-            try:
-                subprocess.call([PIP, "install", package])
-                pkg_success.append(package)
-            except ValueError as e:
-                print "error: ", e
-                pgk_fails.append(package)
-
+    with open("%s/pip_packages.txt"%(args.domainname), 'w') as f:
+        pkg_success = []
+        pgk_fails = []
+        for count, package in enumerate(
+            subprocess.check_output(['pip', 'freeze']).split("\n")
+        ):
+            f.write(package+"\n")
+            print "Trying to install: ", package
+            if package:
+                try:
+                    subprocess.call([PIP, "install", package])
+                    pkg_success.append(package)
+                except ValueError as e:
+                    print "error: ", e
+                    pgk_fails.append(package)
+            
+            
     print "Package Installation Results"
     print "SUCCESS: %s" %(len(pkg_success))
     print "FAIL:    %s" %(len(pgk_fails))
@@ -148,7 +151,7 @@ def django_project(args):
     """
     print "Copying your source tree into the virtual env"
     print "args.django_project: ", args.django_project
-    print "args.virtualenv: ", args.domainname
+    print "args.domainname: ", args.domainname
     subprocess.call(['cp', '-r', args.django_project, args.domainname]) 
 
     #   Install the latest gunicorn if the --gunicorn 
@@ -159,10 +162,10 @@ def django_project(args):
 
     """
         Now we build up a context to apply to gunicorn_start.template.
-        gunicorn_context located: anouman/templates/gunicorn_start/__init__.py
+        default context located: anouman/templates/gunicorn_start/__init__.py
 
-        We the update gunicorn_context with outr context and save the file
-        to {{virtualenv}}/bin/gunicorn_start
+        We the update gunicorn_context with our context and save the file
+        to {{domainname}}/bin/gunicorn_start
     """
     NAME=os.path.basename(args.django_project)
     DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
@@ -172,7 +175,6 @@ def django_project(args):
         'USER':getpass.getuser(),   
         'GROUP':getpass.getuser(),
         'GUNICORN':"%s/gunicorn"%(BIN),
-        #'DJANGODIR':os.path.abspath(args.django_project),
         'DJANGODIR':DJANGODIR,
         'DJANGO_SETTINGS_MODULE':SETTINGS,
         'DJANGO_WSGI_MODULE':WSGI,
@@ -205,14 +207,14 @@ def django_project(args):
     
 
 def new_project(args):
-    BIN="%s/bin"%(args.virtualenv)
+    BIN="%s/bin"%(args.domainname)
     PIP="%s/pip"%(BIN)
     GUNICORN="%s/gunicorn"%(BIN)
     GUNICORN_START="%s/gunicorn_start.py"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
     ADMIN='%s/django-admin.py'%(BIN)
     # Our very first step will be to create a brand new virtual environment
-    subprocess.call(["virtualenv", args.virtualenv])
+    subprocess.call(["virtualenv", args.domainname])
     subprocess.call([PIP, 'install', DJANGO_VERSION])
     # This section setups up the django server
     if args.gunicorn:
