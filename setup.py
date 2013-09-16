@@ -102,7 +102,7 @@ if overlay_warning:
 Danger Will Robinson!
 ========
 
-You have just installed Dnginx over top of an existing
+You have just installed anouman over top of an existing
 installation, without removing it first. Because of this,
 your install may now include extraneous files from a
 previous version that have since been removed from
@@ -114,31 +114,3 @@ should manually remove the
 directory and re-install Dnginx.
 
 """ % {"existing_path": existing_path})
-
-
-"""
-setup(
--    name='anouman',
--    version='0.1',
-+    name='Dnginx',
-+    version=version,
-     author='John Furr',
--    author_email='john.furr@gmail.com',
--    license='Creative Commons Attribution-Noncommercial-Share Alike license',
--    long_description=open('README.txt').read(),
--    py_modules=['bin/anouman',],
--    scripts=['bin/anouman.py',],
--    packages=find_packages(),
--    install_requires=[
--        "Django >= 1.5.2",
-+    description=('rapidly create and deploy django --> gunicorn --> nginx project'),
-+    license='BSD',
-+    packages=packages,
-+    package_data=package_data,
-+    scripts=['anouman/bin/anouman.py'],
-+    classifiers=[
-+        'Development Status :: Beta',
-+        'Environment :: Web Environment',
-     ],
- )
-"""
