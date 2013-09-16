@@ -165,12 +165,15 @@ def django_project(args):
         to {{virtualenv}}/bin/gunicorn_start
     """
     NAME=os.path.basename(args.django_project)
+    DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
+
     context = {
         'NAME':NAME,
         'USER':getpass.getuser(),   
         'GROUP':getpass.getuser(),
         'GUNICORN':"%s/gunicorn"%(BIN),
-        'DJANGODIR':os.path.abspath(args.django_project),
+        #'DJANGODIR':os.path.abspath(args.django_project),
+        'DJANGODIR':DJANGODIR,
         'DJANGO_SETTINGS_MODULE':SETTINGS,
         'DJANGO_WSGI_MODULE':WSGI,
     }   
