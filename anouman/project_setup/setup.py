@@ -134,7 +134,7 @@ def django_project(args):
             subprocess.check_output(['pip', 'freeze']).split("\n")
         ):
             f.write(package+"\n")
-
+            """
             if args.deploy:
                 print "Trying to install: ", package
                 if package:
@@ -144,8 +144,11 @@ def django_project(args):
                     except ValueError as e:
                         print "error: ", e
                         pgk_fails.append(package)
-            
-    if args.deploy:
+            """            
+
+
+    if args.deploy: 
+        subprocess.call(["pip", "install", "-r", "%s/pip_packages.txt"%(args.domainname)])
         print "Package Installation Results"
         print "SUCCESS: %s" %(len(pkg_success))
         print "FAIL:    %s" %(len(pgk_fails))

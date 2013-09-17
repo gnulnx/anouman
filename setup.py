@@ -86,7 +86,7 @@ setup(
     include_package_data = True,
     packages=find_packages(),
     package_data=package_data,
-    scripts=['anouman/bin/anouman-admin.py', 'anouman/bin/anouman-setup.sh'],
+    scripts=['anouman/bin/anouman-admin.py', 'anouman/bin/anouman'],
     classifiers=[
         'Environment :: Web Environment',
     ],
