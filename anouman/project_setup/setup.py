@@ -116,7 +116,11 @@ def django_project(args):
     """
         Create a new virtual env for the project
     """   
-    subprocess.call(["virtualenv", args.domainname])
+    if args.deploy:
+        subprocess.call(["virtualenv", args.domainname])
+    else:
+        os.makedirs(args.domainname)
+        
 
     """
         Install packages from current env
@@ -130,21 +134,23 @@ def django_project(args):
             subprocess.check_output(['pip', 'freeze']).split("\n")
         ):
             f.write(package+"\n")
-            print "Trying to install: ", package
-            if package:
-                try:
-                    subprocess.call([PIP, "install", package])
-                    pkg_success.append(package)
-                except ValueError as e:
-                    print "error: ", e
-                    pgk_fails.append(package)
+
+            if args.deploy:
+                print "Trying to install: ", package
+                if package:
+                    try:
+                        subprocess.call([PIP, "install", package])
+                        pkg_success.append(package)
+                    except ValueError as e:
+                        print "error: ", e
+                        pgk_fails.append(package)
             
-            
-    print "Package Installation Results"
-    print "SUCCESS: %s" %(len(pkg_success))
-    print "FAIL:    %s" %(len(pgk_fails))
-    for f in pgk_fails:
-        print "\t*\t%s"%(f)
+    if args.deploy:
+        print "Package Installation Results"
+        print "SUCCESS: %s" %(len(pkg_success))
+        print "FAIL:    %s" %(len(pgk_fails))
+        for f in pgk_fails:
+            print "\t*\t%s"%(f)
 
     """
         Now we copy your django project into the virtual env
@@ -154,56 +160,58 @@ def django_project(args):
     print "args.domainname: ", args.domainname
     subprocess.call(['cp', '-r', args.django_project, args.domainname]) 
 
+
     #   Install the latest gunicorn if the --gunicorn 
     #   flag is set (It's default is set)
-    if args.gunicorn:
-        subprocess.call([PIP, "install", "gunicorn"])
+    if args.deploy:
+        if args.gunicorn:
+            subprocess.call([PIP, "install", "gunicorn"])
 
 
-    """
-        Now we build up a context to apply to gunicorn_start.template.
-        default context located: anouman/templates/gunicorn_start/__init__.py
+        """
+            Now we build up a context to apply to gunicorn_start.template.
+            default context located: anouman/templates/gunicorn_start/__init__.py
 
-        We the update gunicorn_context with our context and save the file
-        to {{domainname}}/bin/gunicorn_start
-    """
-    NAME=os.path.basename(args.django_project)
-    DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
+            We the update gunicorn_context with our context and save the file
+            to {{domainname}}/bin/gunicorn_start
+        """
+        NAME=os.path.basename(args.django_project)
+        DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
 
-    context = {
-        'NAME':NAME,
-        'USER':getpass.getuser(),   
-        'GROUP':getpass.getuser(),
-        'GUNICORN':"%s/gunicorn"%(BIN),
-        'DJANGODIR':DJANGODIR,
-        'DJANGO_SETTINGS_MODULE':SETTINGS,
-        'DJANGO_WSGI_MODULE':WSGI,
-    }   
-    if args.bind:
-        context['BIND'] = args.bind
-    elif args.socket:
-        context['SOCKFILE'] = args.socket
-    else:
-        raise Exception("You must have either --bind or --socket")
+        context = {
+            'NAME':NAME,
+            'USER':getpass.getuser(),   
+            'GROUP':getpass.getuser(),
+            'GUNICORN':"%s/gunicorn"%(BIN),
+            'DJANGODIR':DJANGODIR,
+            'DJANGO_SETTINGS_MODULE':SETTINGS,
+            'DJANGO_WSGI_MODULE':WSGI,
+        }   
+        if args.bind:
+            context['BIND'] = args.bind
+        elif args.socket:
+            context['SOCKFILE'] = args.socket
+        else:
+            raise Exception("You must have either --bind or --socket")
 
-    gunicorn_context.update(context) 
+        gunicorn_context.update(context) 
 
-    with open(GUNICORN_START, 'w') as f:
-        f.write( 
-            gunicorn_start( 
-                gunicorn_context
-            ) 
+        with open(GUNICORN_START, 'w') as f:
+            f.write( 
+                gunicorn_start( 
+                    gunicorn_context
+                ) 
+            )
+        # Set Permissions on the GUNICORN file    
+        os.chmod(
+            GUNICORN_START, 
+            stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH
         )
-    # Set Permissions on the GUNICORN file    
-    os.chmod(
-        GUNICORN_START, 
-        stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH
-    )
-    print gunicorn_start( gunicorn_context )
+        print gunicorn_start( gunicorn_context )
 
-    """
-        Now we create the gunicorn upstart scripts
-    """
+        """
+            Now we create the gunicorn upstart scripts
+        """
     
 
 def new_project(args):

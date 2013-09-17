@@ -86,13 +86,13 @@ setup(
     include_package_data = True,
     packages=find_packages(),
     package_data=package_data,
-    scripts=['anouman/bin/anouman-admin.py'],
+    scripts=['anouman/bin/anouman-admin.py', 'anouman/bin/anouman-setup.sh'],
     classifiers=[
         'Environment :: Web Environment',
     ],
-    install_requires=[
-        "Django >= 1.2",
-    ],
+    #install_requires=[
+    #    "Django >= 1.2",
+    #],
 )
 
 if overlay_warning:

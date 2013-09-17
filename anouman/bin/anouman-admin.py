@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-import os, argparse
+import os 
+import argparse
+import subprocess
+
+from os.path import expanduser
+
 import anouman.project_setup.setup as setup
 
 descr="""
@@ -81,6 +86,20 @@ def get_args():
         default=True,
     )
 
+    parser.add_argument('--deploy',
+        help='deploy the project',
+        dest='deploy',
+        action='store_true',
+        default=False,
+    )
+    
+    parser.add_argument('--setup',
+        help='setup anouman',
+        dest='setup',
+        action='store_true',
+        default=False,
+    )
+
     parser.add_argument('--mysql',
         help='setup for mysql backed database',
         dest='mysql',
@@ -101,7 +120,6 @@ def get_args():
     """
     if args.bind:
         args.socket=False
-    print "args.django_project: ", args.django_project
 
     return args
 
@@ -115,5 +133,39 @@ if __name__ == '__main__':
 
     if args.project_name:
         setup.new_project( args )
+
+
+    if args.setup:
+        # Change to the users home diretory
+        os.chdir( expanduser("~") )
+
+
+        print "Running initial setup"
+        subprocess.call(["pip", "install", "virtualenv"])      
+        
+        print "Creating the master .anouman virtualenv"
+        subprocess.call(["virtualenv", ".anouman"])
+
+        # Source the activate command
+        print "source .anouman/bin/activate"
+        os.system("source .anouman/bin/activate")
+        #subprocess.call(["source", ".anouman/bin/activate"])
+     
+        print "pip install virtualenvwrapper"
+        subprocess.call(["pip", "install", "virtualenvwrapper"])
+
+        print "installing django for anouman"
+        subprocess.call(["pip", "install", "django"])
+
+        # Now lets convert our virtualenv to a wrapped virtualenv
+        print "mkvirtualenv .anouman"
+        subprocess.call(["mkvirtualenv", ".anouman"])
+
+        print "echo source .anouman/bin/virtualenvwrapper >> .bash_profil"        
+        os.system("source .anouman/bin/virtualenvwrapper")
+        
+        print "Also add it to the users .bash_profile"
+        subprocess.call(["echo", "source .anouman/bin/virtualenvwrapper >> .bash_profile"])
+
 
 
