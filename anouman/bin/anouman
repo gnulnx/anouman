@@ -34,8 +34,8 @@ then
         pip install django -q
     
         ## TODO  pip install anouman
-        #pip install /vagrant/anouman-0.0.1.tar.gz  --upgrade -q
-        pip install anouman/dist/anouman-0.0.1.tar.gz  --upgrade
+        pip install /vagrant/anouman-0.0.1.tar.gz  --upgrade -q
+        #pip install anouman/dist/anouman-0.0.1.tar.gz  --upgrade
     
         lssitepackages
     fi
@@ -44,8 +44,6 @@ then
     echo "client time!"
     #source .virtualenvs/anouman/bin/activate
 
-    #if [ $1 ];
-    #then
     cd ~/
     echo "calling anouman-admin.py $@"
     anouman-admin.py $@
