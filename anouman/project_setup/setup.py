@@ -23,9 +23,7 @@ def find_file(root_dir, pattern):
     matches = []
     for root, dirnames, filenames in os.walk(root_dir):
         for filename in fnmatch.filter(filenames, pattern):
-            print "fmmatch filename: ", filename
             matches.append(os.path.join(root, filename))
-            print "matches: ", matches
     return matches
 
 def get_settings(args):
@@ -55,14 +53,10 @@ def get_settings(args):
     else:
         settings_path = args.settings
    
-    print "You have made it this far" 
-    print "settings_path: ", settings_path
-    print "args.django_project: ", args.django_project
     # We now have the path to the wsgi.py modules, but we need
     # to convert it to python module format:  website.wsgi
     #tmp = settings_path.split( os.path.abspath(args.django_project) )
     tmp = settings_path.split(args.django_project)
-    print "tmp: ", tmp
     if len(tmp) == 2:
         return tmp[1][1:].replace("/", ".").replace(".py", "")
     else:
@@ -195,8 +189,6 @@ def deploy_django_project(args):
         GUNICORN_START,
         stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH
      )
-    #print gunicorn_start( gunicorn_context )
-
     """
         Now we create the gunicorn upstart scripts
     """
@@ -213,28 +205,18 @@ def package_django_project(args):
     os.makedirs(args.domainname)
     
     """
-        Install packages from current env
-        Into the new virtualenv
-        Lastly, pring some simple stats
+        Install packages from project environment into the new virtualenv.
+        Also store the status for success/fail as we install them
     """
+    pip = subprocess.check_output(['which', 'pip'])
+    print "pip: ", pip
+    print "YOU CAN NOT GO PAST HERE"
+    raw_input()
     with open("%s/pip_packages.txt"%(args.domainname), 'w') as f:
         pkg_success = []
         pgk_fails = []
-        for count, package in enumerate(
-            subprocess.check_output(['pip', 'freeze']).split("\n")
-        ):
+        for package in subprocess.check_output([pip, 'freeze']).split("\n"):
             f.write(package+"\n")
-            """
-            if args.deploy:
-                print "Trying to install: ", package
-                if package:
-                    try:
-                        subprocess.call([PIP, "install", package])
-                        pkg_success.append(package)
-                    except ValueError as e:
-                        print "error: ", e
-                        pgk_fails.append(package)
-            """            
     
     """
         Now we copy your django project into the virtual env
@@ -247,16 +229,14 @@ def package_django_project(args):
     subprocess.call(['gzip', args.domainname+".tar"])
     subprocess.call(["rm", "-rf", args.domainname])
 
-
+"""
 def django_project(args):
-    print "django_project"
     if args.deploy:
-        print "calling deploy_django_project"
         deploy_django_project(args)
     else:
-        print "calling package_django_project"
         package_django_project(args)
-    
+"""
+ 
 def new_project(args):
     BIN="%s/bin"%(args.domainname)
     PIP="%s/pip"%(BIN)
