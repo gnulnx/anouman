@@ -39,7 +39,9 @@ then
     
         lssitepackages
     fi
-elif [ $1 ];
+fi
+
+if [ $1 ];
 then
     echo "client time!"
     #source .virtualenvs/anouman/bin/activate

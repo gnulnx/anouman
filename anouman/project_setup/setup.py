@@ -161,7 +161,7 @@ def deploy_django_project(args):
     DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
 
     context = {
-        'NAME':NAME,
+        'NAME':args.domainname,
         'USER':getpass.getuser(),
         'GROUP':getpass.getuser(),
         'GUNICORN':"%s/gunicorn"%(BIN),
@@ -210,13 +210,16 @@ def package_django_project(args):
     """
     pip = subprocess.check_output(['which', 'pip'])
     print "pip: ", pip
-    print "YOU CAN NOT GO PAST HERE"
-    raw_input()
-    with open("%s/pip_packages.txt"%(args.domainname), 'w') as f:
-        pkg_success = []
-        pgk_fails = []
-        for package in subprocess.check_output([pip, 'freeze']).split("\n"):
-            f.write(package+"\n")
+    print "Saving pacakges to: ", "%s/pip_packages.txt"%(args.domainname)
+    os.system("pip freeze > %s/pip_packages.txt"%(args.domainname))
+
+    #freeze = subprocess.check_output([pip, 'freeze'])
+    #print "freeze: ", freeze
+    #with open("%s/pip_packages.txt"%(args.domainname), 'w') as f:
+    #    pkg_success = []
+    #    pgk_fails = []
+    #    for package in subprocess.check_output([pip, 'freeze']).split("\n"):
+    #        f.write(package+"\n")
     
     """
         Now we copy your django project into the virtual env
