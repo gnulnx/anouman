@@ -7,24 +7,42 @@ then
     exit
 fi
 
-function setup {
-    cd ~/
+# TODO:  Allow users to install somewhere besides their home directory    
+cd ~/
 
-    sudo pip install virtualenvwrapper
+if [ ! -d ".virtualenvs/anouman" ]; then
+    echo "Setting up anouman"
 
+    echo "Install virtualwrapper"
+    sudo pip install virtualenvwrapper -q
+
+    echo "Adding variables to .bash_profile"
     source /usr/local/bin/virtualenvwrapper.sh;
     echo "source /usr/local/bin/virtualenvwrapper.sh;" >> .bash_profile
-    echo "source /usr/local/bin/anouman-setup.sh" >> .bash_profile
+
+    echo "source /usr/local/bin/anouman" >> .bash_profile
     echo "workon anouman" >> .bash_profile
 
+    echo "Setting up anouman virtualenv"
     mkvirtualenv anouman;
     workon anouman;
 
-    pip install django
+    echo "Installing django into anouman virtualenv"
+    pip install django -q
+    
+    ## TODO  pip install anouman
+    pip install /vagrant/anouman-0.0.1.tar.gz  --upgrade -q
 
+    
     lssitepackages
-}
+fi
 
-if [ ! -d ".virtualenvs/anouman" ]; then
-    setup
+# TODO:  do you need this?
+source .virtualenvs/anouman/bin/activate
+
+if [ $1 ];
+then
+    cd ~/
+    echo "calling .virtualenvs/anouman/bin/anouman-admin.py $@"
+    .virtualenvs/anouman/bin/anouman-admin.py $@
 fi

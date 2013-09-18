@@ -89,7 +89,6 @@ def get_args():
     parser.add_argument('--deploy',
         help='deploy the project',
         dest='deploy',
-        action='store_true',
         default=False,
     )
     
@@ -128,14 +127,26 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
+    # Client Side
+    # Package a current django project as an anouman tar ball
     if args.django_project:
-        setup.django_project( args )
+        setup.package_django_project(args)
+    
+    # Server Side
+    # deploy a anouman tarball
+    if args.deploy:
+        setup.deploy_django_project(args)
 
+    # This is for creating a brand new django project
+    # TODO do we still want to go this route???
     if args.project_name:
         setup.new_project( args )
 
 
+    # TODO Is this code path still used?
     if args.setup:
+        print "YEP YOU ARE IN args.setup section"
+        sys.exit(0)
         # Change to the users home diretory
         os.chdir( expanduser("~") )
 
@@ -166,6 +177,5 @@ if __name__ == '__main__':
         
         print "Also add it to the users .bash_profile"
         subprocess.call(["echo", "source .anouman/bin/virtualenvwrapper >> .bash_profile"])
-
 
 

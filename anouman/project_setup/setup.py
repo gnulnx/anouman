@@ -23,7 +23,9 @@ def find_file(root_dir, pattern):
     matches = []
     for root, dirnames, filenames in os.walk(root_dir):
         for filename in fnmatch.filter(filenames, pattern):
+            print "fmmatch filename: ", filename
             matches.append(os.path.join(root, filename))
+            print "matches: ", matches
     return matches
 
 def get_settings(args):
@@ -52,10 +54,15 @@ def get_settings(args):
         raise NoSettingsError() 
     else:
         settings_path = args.settings
-    
+   
+    print "You have made it this far" 
+    print "settings_path: ", settings_path
+    print "args.django_project: ", args.django_project
     # We now have the path to the wsgi.py modules, but we need
     # to convert it to python module format:  website.wsgi
-    tmp = settings_path.split( os.path.abspath(args.django_project) )
+    #tmp = settings_path.split( os.path.abspath(args.django_project) )
+    tmp = settings_path.split(args.django_project)
+    print "tmp: ", tmp
     if len(tmp) == 2:
         return tmp[1][1:].replace("/", ".").replace(".py", "")
     else:
@@ -96,15 +103,105 @@ def get_wsgi(args):
     else:
         raise NoWSGIError( str(tmp) )
 
-
-
-def django_project(args):
+def deploy_django_project(args):
+    print "deploy_django_project 1"
     """
-        Builds the gunicorn_start.py file based on:
-
-        1)  A django settings.py file
-        2)  A django project which is recursivly grepped for settings.py
+        The Very First thing we want to do is unpack the project
     """
+    print "unzipping: ", args.deploy
+    subprocess.call(["tar", "xvfz", args.deploy])
+    
+    # Set both args.domainname  AND args.django_project to the deploy basename
+    args.domainname = args.deploy.split(".tar.gz")[0]
+    args.django_project=args.domainname+"/src"
+
+    # Ideally I'd like to call mkvirtualenv from virtualenv wrapper
+    # But since it's derived from a soruced file it's not accessible
+    # so instead we just call virtualenv ourselves and save in the
+    # default ~/.virtualenvs/  directory
+    VIRTUALENV = ".virtualenvs/%s"%(args.domainname)
+    subprocess.call(["virtualenv", VIRTUALENV])
+
+    SETTINGS = get_settings(args)
+    WSGI = get_wsgi(args)
+
+
+    print "SETTINGS: ", SETTINGS
+    print "WSGI: ", WSGI
+
+    BIN=os.path.abspath("%s/bin"%(VIRTUALENV))
+    PIP="%s/pip"%(BIN)
+    DJANGO_VERSION="django%s"%(args.django_version)
+    GUNICORN_START="%s/gunicorn_start"%(BIN)
+
+    print "deploy_django_project 2"
+
+    pkg_success = []
+    pgk_fails = []
+    with open("%s/pip_packages.txt"%(args.domainname)) as f:
+        PACKAGES = f.readlines()
+        PACKAGES.append("gunicorn")
+        for package in PACKAGES:
+            try:
+                subprocess.call([PIP, "install", package])
+                pkg_success.append(package)
+            except:
+                pgk_fails.append(package)
+    
+    subprocess.call([PIP, "install", "-r", "%s/pip_packages.txt"%(args.domainname)])
+    print "Package Installation Results"
+    print "SUCCESS: %s" %(len(pkg_success))
+    print "FAIL:    %s" %(len(pgk_fails))
+    for f in pgk_fails:
+        print "\t*\t%s"%(f)
+
+
+    """
+        Now we build up a context to apply to gunicorn_start.template.
+        default context located: anouman/templates/gunicorn_start/__init__.py
+
+        We the update gunicorn_context with our context and save the file
+        to {{domainname}}/bin/gunicorn_start
+    """
+    NAME=os.path.basename(args.django_project)
+    DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
+
+    context = {
+        'NAME':NAME,
+        'USER':getpass.getuser(),
+        'GROUP':getpass.getuser(),
+        'GUNICORN':"%s/gunicorn"%(BIN),
+        'DJANGODIR':DJANGODIR,
+        'DJANGO_SETTINGS_MODULE':SETTINGS,
+        'DJANGO_WSGI_MODULE':WSGI,
+    }
+    if args.bind:
+        context['BIND'] = args.bind
+    elif args.socket:
+        context['SOCKFILE'] = args.socket
+    else:
+        raise Exception("You must have either --bind or --socket")
+
+    gunicorn_context.update(context)
+
+    with open(GUNICORN_START, 'w') as f:
+        f.write(
+            gunicorn_start(
+                gunicorn_context
+            )
+        )
+    # Set Permissions on the GUNICORN file
+    os.chmod(
+        GUNICORN_START,
+        stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH
+     )
+    #print gunicorn_start( gunicorn_context )
+
+    """
+        Now we create the gunicorn upstart scripts
+    """
+
+def package_django_project(args):
     SETTINGS = get_settings(args)
     WSGI = get_wsgi(args)
     
@@ -112,16 +209,9 @@ def django_project(args):
     PIP="%s/pip"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
     GUNICORN_START="%s/gunicorn_start"%(BIN)
-    
-    """
-        Create a new virtual env for the project
-    """   
-    if args.deploy:
-        subprocess.call(["virtualenv", args.domainname])
-    else:
-        os.makedirs(args.domainname)
         
-
+    os.makedirs(args.domainname)
+    
     """
         Install packages from current env
         Into the new virtualenv
@@ -145,78 +235,28 @@ def django_project(args):
                         print "error: ", e
                         pgk_fails.append(package)
             """            
-
-
-    if args.deploy: 
-        subprocess.call(["pip", "install", "-r", "%s/pip_packages.txt"%(args.domainname)])
-        print "Package Installation Results"
-        print "SUCCESS: %s" %(len(pkg_success))
-        print "FAIL:    %s" %(len(pgk_fails))
-        for f in pgk_fails:
-            print "\t*\t%s"%(f)
-
+    
     """
         Now we copy your django project into the virtual env
     """
     print "Copying your source tree into the virtual env"
     print "args.django_project: ", args.django_project
     print "args.domainname: ", args.domainname
-    subprocess.call(['cp', '-r', args.django_project, args.domainname]) 
+    subprocess.call(['cp', '-r', args.django_project, args.domainname+"/src"]) 
+    subprocess.call(['tar', '-cf', args.domainname+".tar", args.domainname])
+    subprocess.call(['gzip', args.domainname+".tar"])
+    subprocess.call(["rm", "-rf", args.domainname])
 
 
-    #   Install the latest gunicorn if the --gunicorn 
-    #   flag is set (It's default is set)
+def django_project(args):
+    print "django_project"
     if args.deploy:
-        if args.gunicorn:
-            subprocess.call([PIP, "install", "gunicorn"])
-
-
-        """
-            Now we build up a context to apply to gunicorn_start.template.
-            default context located: anouman/templates/gunicorn_start/__init__.py
-
-            We the update gunicorn_context with our context and save the file
-            to {{domainname}}/bin/gunicorn_start
-        """
-        NAME=os.path.basename(args.django_project)
-        DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
-
-        context = {
-            'NAME':NAME,
-            'USER':getpass.getuser(),   
-            'GROUP':getpass.getuser(),
-            'GUNICORN':"%s/gunicorn"%(BIN),
-            'DJANGODIR':DJANGODIR,
-            'DJANGO_SETTINGS_MODULE':SETTINGS,
-            'DJANGO_WSGI_MODULE':WSGI,
-        }   
-        if args.bind:
-            context['BIND'] = args.bind
-        elif args.socket:
-            context['SOCKFILE'] = args.socket
-        else:
-            raise Exception("You must have either --bind or --socket")
-
-        gunicorn_context.update(context) 
-
-        with open(GUNICORN_START, 'w') as f:
-            f.write( 
-                gunicorn_start( 
-                    gunicorn_context
-                ) 
-            )
-        # Set Permissions on the GUNICORN file    
-        os.chmod(
-            GUNICORN_START, 
-            stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH
-        )
-        print gunicorn_start( gunicorn_context )
-
-        """
-            Now we create the gunicorn upstart scripts
-        """
+        print "calling deploy_django_project"
+        deploy_django_project(args)
+    else:
+        print "calling package_django_project"
+        package_django_project(args)
     
-
 def new_project(args):
     BIN="%s/bin"%(args.domainname)
     PIP="%s/pip"%(BIN)

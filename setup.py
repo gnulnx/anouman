@@ -74,8 +74,6 @@ for dirpath, dirnames, filenames in os.walk(anouman_dir):
 
 version = "0.0.1"
 
-print find_packages()
-
 setup(
     name='anouman',
     version=version,
@@ -90,9 +88,10 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
     ],
-    #install_requires=[
-    #    "Django >= 1.2",
-    #],
+    install_requires=[
+        "virtualenvwrapper",
+        #"Django >= 1.2",
+    ],
 )
 
 if overlay_warning:
