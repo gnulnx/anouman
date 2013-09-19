@@ -16,7 +16,7 @@ Step 2: Create an anouman package that will be deployable on an anouman loaded
 
         anouman --django-project={path to your change project} --domainname=www.example.com
 
-        What just happened behind the scense was your project was copied into a directory named
+        What just happened behind the scenes was your project was copied into a directory named
         www.example.com. Inside this directory is another file which contains a listing of your 
         projects python packages generated from the output of:  pip --freeze 
 
