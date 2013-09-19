@@ -72,12 +72,11 @@ def get_args():
         dest='bind',
         default=False, #ex:  10.0.1.13:8001
     )
-    
-    parser.add_argument('--socket',
-        help='Set the unix socket we should bind to',
-        dest='socket',
-        default='unix:/var/run/your_project.sock',
-    )
+    #parser.add_argument('--socket',
+    #    help='Set the unix socket we should bind to',
+    #    dest='socket',
+    #    default='unix:/var/run/your_project.sock',
+    #)
     
     parser.add_argument('--gunicorn',
         help='use gunicorn as the django server',

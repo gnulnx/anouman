@@ -168,13 +168,14 @@ def deploy_django_project(args):
         'DJANGODIR':DJANGODIR,
         'DJANGO_SETTINGS_MODULE':SETTINGS,
         'DJANGO_WSGI_MODULE':WSGI,
+        'BIND':args.bind if args.bind else 'unix:/var/run/your_project.sock',
     }
-    if args.bind:
-        context['BIND'] = args.bind
-    elif args.socket:
-        context['SOCKFILE'] = args.socket
-    else:
-        raise Exception("You must have either --bind or --socket")
+    #if not args.bind:
+    #    context['BIND'] = args.bind
+    #elif args.socket:
+    #    context['SOCKFILE'] = args.socket
+    #else:
+    #    raise Exception("You must have either --bind or --socket")
 
     gunicorn_context.update(context)
 
