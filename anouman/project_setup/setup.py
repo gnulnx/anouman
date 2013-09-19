@@ -17,6 +17,11 @@ from anouman.templates.init_script import (
     init_context,
 )
 
+from anouman.templates.nginx import (
+    nginx_upstart,
+    nginx_context,
+)
+
 from anouman.exceptions import (
     MultipleSettingError,
     NoSettingsError,
@@ -63,7 +68,10 @@ def get_settings(args):
     #tmp = settings_path.split( os.path.abspath(args.django_project) )
     tmp = settings_path.split(args.django_project)
     if len(tmp) == 2:
-        return tmp[1][1:].replace("/", ".").replace(".py", "")
+        return [
+            os.path.abspath(settings_path), 
+            tmp[1][1:].replace("/", ".").replace(".py", "")
+        ]
     else:
         raise NoSettingsError( str(tmp) )
     
@@ -121,7 +129,9 @@ def deploy_django_project(args):
     VIRTUALENV = ".virtualenvs/%s"%(args.domainname)
     subprocess.call(["virtualenv", VIRTUALENV])
 
-    SETTINGS = get_settings(args)
+    #settings is the full path
+    #SETTINGS is the django project path:  ex finance.settings
+    [settings, SETTINGS] = get_settings(args)
     WSGI = get_wsgi(args)
 
 
@@ -212,8 +222,42 @@ def deploy_django_project(args):
     os.system("sudo mv %s /etc/init/%s"%(NAME, NAME) )
 
 
+    """
+        nginx script for the site.
+        place in:   /etc/nginx/sites-available
+        link to:    /etc/nginx/sites-enabled 
+
+        templ_file: anouman/templates/nginx/ngix_site.template
+         
+    """
+    # Step 1.  update the nginx context
+    print "settings: ", settings
+    print "SETTINGS: ", SETTINGS
+    #import sys
+    # the mock-0.3.1 dir contains testcase.py, testutils.py & mock.py
+    #sys.path.append('/foo/bar/mock-0.3.1')
+
+    nginx_context.update({
+        'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
+        'DOMAINNAME':args.domainname,
+        'DJANGO_STATIC':'/home/jfurr/finance2/finance/static_root/',
+        'DJANGO_MEDIA':'/home/jfurr/finance2/finance/media/',
+    })
+
+    print "nginx_context: ", nginx_context
+    NGINX_CONF='nginx.%s.conf'%(args.domainname)
+    with open(NGINX_CONF, 'w') as f:
+        f.write( nginx_upstart(nginx_context) )
+
+    print "We need to copy the nginx.domainname.conf file to /etc/init/"
+    print "This will require sudo"
+    os.system("sudo mv %s /etc/init/%s" % (NGINX_CONF, NGINX_CONF) )
+
+
 def package_django_project(args):
-    SETTINGS = get_settings(args)
+    # settings is the full path
+    # SETTINGS is the django projec path, exL  finance.settings
+    [settings, SETTINGS] = get_settings(args)
     WSGI = get_wsgi(args)
     
     BIN=os.path.abspath("%s/bin"%(args.domainname))
