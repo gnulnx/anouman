@@ -12,6 +12,11 @@ from anouman.templates.gunicorn_start import (
     gunicorn_context,
 )
 
+from anouman.templates.init_script import (
+    build_init,
+    init_context,
+)
+
 from anouman.exceptions import (
     MultipleSettingError,
     NoSettingsError,
@@ -168,14 +173,11 @@ def deploy_django_project(args):
         'DJANGODIR':DJANGODIR,
         'DJANGO_SETTINGS_MODULE':SETTINGS,
         'DJANGO_WSGI_MODULE':WSGI,
-        'BIND':args.bind if args.bind else 'unix:/var/run/your_project.sock',
+
+        # Default bind is unix:/var/run/domainname.com.sock
+        # Override with --bind=ip:port 
+        'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
     }
-    #if not args.bind:
-    #    context['BIND'] = args.bind
-    #elif args.socket:
-    #    context['SOCKFILE'] = args.socket
-    #else:
-    #    raise Exception("You must have either --bind or --socket")
 
     gunicorn_context.update(context)
 
@@ -190,9 +192,25 @@ def deploy_django_project(args):
         GUNICORN_START,
         stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH
      )
+
+
     """
         Now we create the gunicorn upstart scripts
     """
+    NAME=args.domainname+".conf"
+    context = {
+        'GUNICORN_START':GUNICORN_START,
+        'DOMAINNAME':args.domainname, 
+    }
+
+    init_context.update(context)
+    with open(NAME, 'w') as f:
+        f.write(build_init(init_context))
+
+    print "We need to copy the website startup scripts to /etc/init/"
+    print "This requires you to enter you sudo password now."
+    os.system("sudo mv %s /etc/init/%s"%(NAME, NAME) )
+
 
 def package_django_project(args):
     SETTINGS = get_settings(args)
@@ -214,14 +232,7 @@ def package_django_project(args):
     print "Saving pacakges to: ", "%s/pip_packages.txt"%(args.domainname)
     os.system("pip freeze > %s/pip_packages.txt"%(args.domainname))
 
-    #freeze = subprocess.check_output([pip, 'freeze'])
-    #print "freeze: ", freeze
-    #with open("%s/pip_packages.txt"%(args.domainname), 'w') as f:
-    #    pkg_success = []
-    #    pgk_fails = []
-    #    for package in subprocess.check_output([pip, 'freeze']).split("\n"):
-    #        f.write(package+"\n")
-    
+
     """
         Now we copy your django project into the virtual env
     """
