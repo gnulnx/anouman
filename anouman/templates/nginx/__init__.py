@@ -1,7 +1,5 @@
 import os
 from django.template import Template, Context
-from django.conf import settings
-settings.configure()
 
 """
     Build the nginx upstart command that will run the site
@@ -13,11 +11,6 @@ nginx_context = {
     'DOMAINNAME':'',
     'DJANGO_STATIC':'',
     'DJANGO_MEDIA':'',
-
-    #   You can bind your server to a unix socket or to a port
-    #   But you should only bind it to one or the other
-    'BIND':False,                      # ex:  10.0.2.13:80
-    'SOCKFILE':False,                   # ex:  /var/run/gunicorn.sock
 }
 
 
