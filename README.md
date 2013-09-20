@@ -1,7 +1,8 @@
 anouman
 ======
 
-A django wrapper designed to setup django project so they are easily deployable with nginx/gunicorn
+A django site deployment tool that is designed greatly simplify the process of deploying django projects behind gunicorn/nginx.
+
 
 
 
