@@ -12,12 +12,14 @@ Step 1: Switch to the python virtualenv you use for development.
         pip install anouman
 
 Step 2: Create an anouman package that will be deployable on an anouman loaded
-        server.
+        server.  Start by navigating to the directory containing your django project.
+        This is the directory you originall ran django-admin.y --startproject.
+        
 
-        anouman --django-project={path to your change project} --domainname=www.example.com
+        anouman --django-project={path to your change project} --domainname=example.com
 
         What just happened behind the scenes was your project was copied into a directory named
-        www.example.com. Inside this directory is another file which contains a listing of your 
+        example.com. Inside this directory is another file which contains a listing of your 
         projects python packages generated from the output of:  pip --freeze 
 
 Step 3: Scp your project to the server
@@ -32,5 +34,5 @@ Step 5: Setup your anouman and deploy your new project
 
         anouman --depoly=www.domain.example.com.tar.gz
 
-
+Step 6: Restart your server to bring everything online
               
