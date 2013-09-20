@@ -1,7 +1,7 @@
 anouman
 ======
 
-A django site deployment tool that is designed greatly simplify the process of deploying django projects behind gunicorn/nginx.
+A django site deployment tool that is designed to greatly simplify the process of deploying django projects behind gunicorn/nginx.
 
 
 
