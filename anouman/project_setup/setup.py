@@ -251,7 +251,10 @@ def deploy_django_project(args):
 
     print "We need to copy the nginx.domainname.conf file to /etc/init/"
     print "This will require sudo"
-    os.system("sudo mv %s /etc/init/%s" % (NGINX_CONF, NGINX_CONF) )
+    print "cmd: ", "sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF)
+    os.system("sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF) )
+    # now create the symbolic link to sites-enabled
+    os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
 
 
 def package_django_project(args):
