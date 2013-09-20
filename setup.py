@@ -90,6 +90,10 @@ setup(
     ],
     install_requires=[
         "virtualenvwrapper",
+        
+        # Currently only the django template engine is being used
+        # but there are plans to have an anouman server monitoring
+        # protion of the website  
         #"Django >= 1.2",
     ],
 )
