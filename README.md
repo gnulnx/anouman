@@ -4,10 +4,9 @@ anouman
 A django wrapper designed to setup django project so they are easily deployable with nginx/gunicorn
 
 
-Step 1: Switch to the python environment you use for development.
-        Many people use virtualenv to contain all of their django related
-        python packages in one place.  If you do so then first change to your virtual env.
-        Now install anouman.
+Step 1: Switch to the python virtualenv you use for development.
+        You are using virtualenv for python developmen right?  If not anouman should still work
+        with your python system packages.
 
         source /path/to/your/virtualenv/activate
         pip install anouman
