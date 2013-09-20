@@ -9,6 +9,7 @@ Step 1: Switch to the python environment you use for development.
         python packages in one place.  If you do so then first change to your virtual env.
         Now install anouman.
 
+        source /path/to/your/virtualenv/activate
         pip install anouman
 
 Step 2: Create an anouman package that will be deployable on an anouman loaded
