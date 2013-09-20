@@ -1,12 +1,12 @@
 Anouman Overview
 ================
 
-Anouman is a django site deployment tool that is designed to greatly simplify the process of deploying django projects behind gunicorn/nginx.  The following tutorial will walk you through the process of setting up and deploying your django project on a fresh server.  In order to follow along you will need to first install [vagrant](http://www.vagrantup.com/) and [virtualbox](https://www.virtualbox.org/).  We will be using these tools to build a fresh ubuntu box to test out django deployment on.
+Anouman is a django site deployment tool that is designed to greatly simplify the process of deploying django projects behind gunicorn/nginx.  The following tutorial will walk you through the process of setting up and deploying your django project on a fresh server.  In order to follow along you will first need to install [vagrant](http://www.vagrantup.com/) and [virtualbox](https://www.virtualbox.org/).  We will be using these tools to build a fresh ubuntu box to test out django deployment on.
 
 
 
 Setup and Deployment Tutorial
-=============================
+-----------------------------
 
 **Step 1:** Switch to the python virtualenv you use for development.
         You are using virtualenv for python developmen right?  If not anouman should still work
