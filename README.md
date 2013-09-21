@@ -110,7 +110,14 @@ Setup and Deployment Tutorial
         source /path/to/your/virtualenv/activate
         pip install anouman
 
-**Step 2:** Create an anouman package that will be deployable on an anouman loaded
+**Step 3:** Setup you STATIC_ROOT and STATIC_MEDIA files.  We recommend installing into the package location.  For example if your domain name is example.com and your odeployment user is anouman then we suggest:
+
+        STATIC_ROOT=/home/anouman/example.com/static_root
+        MEDIA_ROOT=/home/anouman/example.com/media_root
+        
+This will keep your entire site bundled up in one nice neat directory, which turns out to be incredibly useful if you want to deploy and manage more than one site...
+
+**Step 3:** Create an anouman package that will be deployable on an anouman loaded
         server.  Start by navigating to the directory containing your django project.
         This is the directory you originall ran "django-admin.py startproject".
         
@@ -123,28 +130,28 @@ Setup and Deployment Tutorial
 
 ### Section2:  Deploying
 
-**Step 3:** Scp your project to virtual machine we created above.
+**Step 4:** Scp your project to virtual machine we created above.
 
         scp example.com.tar.gz  anouman@your.ip.address:/home/anouman
 
-**Step 4:** Install anouman into the servers system python repository.
+**Step 5:** Install anouman into the servers system python repository.
 
         sudo pip install anouman
 
-**Step 5:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with on command.
+**Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with on command.
 
         anouman --deploy example.com.tar.gz
 
 The first time you call anouman it will download and install virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv and a wrapped 'example.com' virtualenv.
 
-**Step 6:** Restart your server to bring everything online.  If you are using vagrant to follow along you may need to give the server a minute or two after calling 'vagrant up' returns before your website comes on line.  There seems to be either a bug in virtualbox or vagrant with host networking at times...
+**Step 7:** Restart your server to bring everything online.  If you are using vagrant to follow along you may need to give the server a minute or two after calling 'vagrant up' returns before your website comes on line.  There seems to be either a bug in virtualbox or vagrant with host networking at times...
 
     exit  
     vagrant halt
     vagrant up
     
               
-**Step 7**  modify your /etc/hosts file to reflect the domainname/ip address of your server.  For example if your ipaddress is 10.0.1.12 and your domainname is *example.com*  then add the following line to your /etc/hosts file.
+**Step 8**  modify your /etc/hosts file to reflect the domainname/ip address of your server.  For example if your ipaddress is 10.0.1.12 and your domainname is *example.com*  then add the following line to your /etc/hosts file.
 
     10.0.1.12   www.example.com   example.com
 
