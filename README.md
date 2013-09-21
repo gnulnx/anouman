@@ -146,4 +146,4 @@ The first time you call anouman it will download and install virtualenv/virtuale
     10.0.1.12   www.example.com   example.com
 
 
-If everything works as expected you should be able to point your browser to the 
+If everything works as expected you should be able to point your browser to the ip address of your virtual machine
