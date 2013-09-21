@@ -75,7 +75,7 @@ When vagrant finishes powering up, log into your VM with:
     
 Now we want to add a user that we will use to deploy our django projects.
 
-    adduser anouman
+    sudo adduser anouman
     
 Next we want to go ahead and give our new user sudo privileges, by editing /etc/sudoers and adding the following line:
     
