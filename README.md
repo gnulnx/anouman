@@ -141,7 +141,7 @@ The first time you call anouman it will download and install virtualenv/virtuale
     vagrant up
     
               
-**Step 7**  modify your /etc/hosts file to reflect the domainname/ip address of your server.  For example if your ipaddress is 10.0.1.12 and your domainname is example.com  then add the following line to your /etc/hosts file.
+**Step 7**  modify your /etc/hosts file to reflect the domainname/ip address of your server.  For example if your ipaddress is 10.0.1.12 and your domainname is *example.com*  then add the following line to your /etc/hosts file.
 
     10.0.1.12   www.example.com   example.com
 
