@@ -87,6 +87,11 @@ setup(
     scripts=['anouman/bin/anouman-admin.py', 'anouman/bin/anouman'],
     classifiers=[
         'Environment :: Web Environment',
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Internet :: WWW/HTTP :: WSGI',
     ],
     install_requires=[
         "virtualenvwrapper",
