@@ -116,12 +116,12 @@ First set you database host to match the ip address of the virtual machine you c
 
     'HOST': '10.0.1.15'
     
-Next we need to make sure out STATIC_ROOT and MEDIA_ROOT are set correctly.  We recommend installing into the anouman package location.  For example if your domain name is *example.com* and your deployment user is *anouman* then we suggest updating your settings.py file with the following:
+Next we need ensure that our STATIC_ROOT and MEDIA_ROOT are set correctly.  We recommend installing into the anouman package location.  For example if your domain name is *example.com* and your deployment user is *anouman* then we suggest updating your settings.py file with the following:
 
         STATIC_ROOT=/home/anouman/example.com/static_root
         MEDIA_ROOT=/home/anouman/example.com/media_root
         
-This will keep your entire site bundled up in one nice neat directory, which turns out to be incredibly useful if you want to deploy and manage more than one site...
+Now when you run *./manage.py collectstatic* your site will stay bundled up in one nice neat directory, which turns out to be incredibly useful if you want to deploy and manage more than one site...
 
 **Step 3:** Create an anouman package that will be deployable on an anouman loaded
         server.  Start by navigating to the directory containing your django project.
