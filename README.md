@@ -68,8 +68,21 @@ Setup and Deployment Tutorial
 
     vagrant up
     
-This will start
+When vagrant finishes powering up, log into your VM with:
 
+    vagrant ssh
+    
+Now we want to add a user that we will use to deploy our django projects.
+
+    adduser anouman
+    
+Next we want to go ahead and give our new user sudo privileges, by editing /etc/sudoers and adding the following line:
+    
+    anouman ALL=(ALL:ALL) ALL  
+    
+directly below the line that say's:
+
+    root    ALL=(ALL:ALL) ALL
 
 
 **Step 1:** Switch to the python virtualenv you use for development.
