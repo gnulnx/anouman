@@ -48,7 +48,7 @@ Virtual Machine Creation and Provisioning
       #end 
     end
 
-**Step 2:** Copy the following information into your a file called 'bootstrap.sh' in the same directory as your Vagrantfile.   This will give us basic provisioning of our new system.  
+**Step 2:** Copy the following information into a file called 'bootstrap.sh' in the same directory as your Vagrantfile.   This will give us basic provisioning of our new system.  
 
     #!/usr/bin/env bash
     sudo apt-get update                         # Update apt-get
@@ -65,7 +65,7 @@ Virtual Machine Creation and Provisioning
     sudo apt-get install -yf build-essential
 
 
-**Step 3:** Power on your virtual machine and finish setting it up.
+**Step 3:** Power on your virtual machine and finish setting it up:
 
     vagrant up
     
@@ -89,12 +89,12 @@ Now we will use ifconfig to determine the public ip address of our new server.
 
     ifconfig
     
-Remember this information because we now want to log out and then log back in as our user anouman:
+Remember this information because we now want to log out and then log back in as the user anouman:
 
     exit
     ssh anouman@your.ip.address
     
-Assuming this worked that is create we are set to start the anouman tutorial
+Assuming this worked then you are ready to walk through the anouman tutorial and in the process deploy your django project on a fresh virtual machine.
 
 
 
@@ -111,26 +111,33 @@ Setup and Deployment Tutorial
 
 **Step 2:** Create an anouman package that will be deployable on an anouman loaded
         server.  Start by navigating to the directory containing your django project.
-        This is the directory you originall ran django-admin.y --startproject.
+        This is the directory you originall ran "django-admin.py startproject".
         
 
         anouman --django-project={path to your change project} --domainname=example.com
 
-        What just happened behind the scenes was your project was copied into a directory named
-        example.com. Inside this directory is another file which contains a listing of your 
+        What just happened behind the scenes was your django project was copied into a directory named
+        example.com. Inside this directory is another file which contains a listing of your django projects 
         python packages generated from the output of:  pip --freeze 
 
-**Step 3:** Scp your project to the server
+**Step 3:** Scp your project to virtual machine we created above.
 
-        scp www.example.com.tar.gz  username@www.example.com:/home/username
+        scp www.example.com.tar.gz  anouman@www.example.com:/home/anouman
 
-**Step 4:** Install anouman into the system python repository.
+**Step 4:** Install anouman into the servers system python repository.
 
         sudo pip install anouman
 
-**Step 5:** Setup your anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.
+**Step 5:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with on command.
 
-        anouman --depoly=www.domain.example.com.tar.gz
+        anouman --depoly=example.com.tar.gz
 
-**Step 6:** Restart your server to bring everything online.  If you are using vagrant to follow along you may need to give the server a minute or two after vagrant up returns before your website comes on line.  There seems to be either a bug in virtualbox or vagrant with host networking at times...
+The first time you call anouman it will download and install virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv and a wrapped 'example.com' virtualenv.
+
+**Step 6:** Restart your server to bring everything online.  If you are using vagrant to follow along you may need to give the server a minute or two after calling 'vagrant up' returns before your website comes on line.  There seems to be either a bug in virtualbox or vagrant with host networking at times...
+
+    exit  
+    vagrant halt
+    vagrant up
+    
               
