@@ -110,7 +110,7 @@ Setup and Deployment Tutorial
         source /path/to/your/virtualenv/activate
         pip install anouman
 
-**Step 3:** Update your django settings file to reflect the Virtual Machine you are about to deploy it on.
+**Step 2:** Update your django settings file to reflect the Virtual Machine you are about to deploy it on.
 
 First set you database host to match the ip address of the virtual machine you created above.  For example if your virtual machine ip is 10.0.1.15 then make sure you have the followign in the DATABASES section of your settings file:
 
