@@ -110,7 +110,13 @@ Setup and Deployment Tutorial
         source /path/to/your/virtualenv/activate
         pip install anouman
 
-**Step 3:** Setup you STATIC_ROOT and STATIC_MEDIA files.  We recommend installing into the package location.  For example if your domain name is example.com and your odeployment user is anouman then we suggest:
+**Step 3:** Update your django settings file to reflect the Virtual Machine you are about to deploy it on.
+
+First set you database host to match the ip address of the virtual machine you created above.  For example if your virtual machine ip is 10.0.1.15 then make sure you have the followign in the DATABASES section of your settings file:
+
+    'HOST': '10.0.1.15'
+    
+Next we need to make sure out STATIC_ROOT and MEDIA_ROOT are set correctly.  We recommend installing into the anouman package location.  For example if your domain name is *example.com* and your deployment user is *anouman* then we suggest updating your settings.py file with the following:
 
         STATIC_ROOT=/home/anouman/example.com/static_root
         MEDIA_ROOT=/home/anouman/example.com/media_root
