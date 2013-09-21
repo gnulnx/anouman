@@ -1,15 +1,18 @@
 Anouman Overview
 ================
 
-Anouman is a django site deployment tool that is designed to greatly simplify the process of deploying django projects behind gunicorn/nginx.  The following tutorial will walk you through the process of setting up and deploying your django project on a fresh server.  In order to follow along you will first need to install [vagrant](http://www.vagrantup.com/) and [virtualbox](https://www.virtualbox.org/).  We will be using these tools to build a fresh ubuntu box to test out django deployment on.
+Anouman is a django site deployment tool that is designed to greatly simplify the process of deploying django projects behind gunicorn/nginx.  Anouman uses virtualenv/virtualenvwrapper to help manage the process of deploying your django instances.  The easiest way to become familiar with Anouman is to dive in and use it by following along with the tutorial below.  Before you begin you will first need to install [vagrant](http://www.vagrantup.com/) and [virtualbox](https://www.virtualbox.org/).  We will be using these tools to build a fresh ubuntu VM to test our django deployment on.
 
 
 
 Setup and Deployment Tutorial
 -----------------------------
 
+*Anouman is still very much alpha stage software.  As such it has only been tested on Ubuntu 12.04 using the BASH shell.  I'd love to hear from others if they get this working in other OS/SHELL combinations.* 
+
+
 **Step 1:** Switch to the python virtualenv you use for development.
-        You are using virtualenv for python developmen right?  If not anouman should still work
+        You are using virtualenv for python development right?  If not Anouman should still work
         with your python system packages.
 
         source /path/to/your/virtualenv/activate
@@ -24,7 +27,7 @@ Setup and Deployment Tutorial
 
         What just happened behind the scenes was your project was copied into a directory named
         example.com. Inside this directory is another file which contains a listing of your 
-        projects python packages generated from the output of:  pip --freeze 
+        python packages generated from the output of:  pip --freeze 
 
 **Step 3:** Scp your project to the server
 
@@ -34,9 +37,9 @@ Setup and Deployment Tutorial
 
         sudo pip install anouman
 
-**Step 5:** Setup your anouman and deploy your new project
+**Step 5:** Setup your anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.
 
         anouman --depoly=www.domain.example.com.tar.gz
 
-**Step 6:** Restart your server to bring everything online
+**Step 6:** Restart your server to bring everything online.  If you are using vagrant to follow along you may need to give the server a minute or two after vagrant up returns before your website comes on line.  There seems to be either a bug in virtualbox or vagrant with host networking at times...
               
