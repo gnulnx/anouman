@@ -233,15 +233,14 @@ def deploy_django_project(args):
     # Step 1.  update the nginx context
     print "settings: ", settings
     print "SETTINGS: ", SETTINGS
-    #import sys
-    # the mock-0.3.1 dir contains testcase.py, testutils.py & mock.py
-    #sys.path.append('/foo/bar/mock-0.3.1')
-
+    ## Import the users django settigns file and grab the STATIC_ROOT and MEDIA_ROOT vars
+    sys.path.append(os.path.dirname(settings))
+    import settings
     nginx_context.update({
         'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
         'DOMAINNAME':args.domainname,
-        'DJANGO_STATIC':'/home/jfurr/finance2/finance/static_root/',
-        'DJANGO_MEDIA':'/home/jfurr/finance2/finance/media/',
+        'DJANGO_STATIC':settings.STATIC_ROOT,
+        'DJANGO_MEDIA':settings.MEDIA_ROOT,
     })
 
     print "nginx_context: ", nginx_context
