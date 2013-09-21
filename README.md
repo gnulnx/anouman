@@ -12,8 +12,6 @@ Virtual Machine Creation and Provisioning
 -----------------------------------------
 
 
-
-
 **Step 1:** VM creation.  Hopefully by now you have vagrant and virtual box both installed.  What you should do next is create a directory called 'site1' and then place the following contents into a file named 'Vagrantfile'
 
     # -*- mode: ruby -*-
