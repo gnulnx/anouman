@@ -98,7 +98,7 @@ Assuming this worked then you are ready to walk through the anouman tutorial and
 
 
 
-Setup and Deployment Tutorial
+Anouman Setup and Deployment Tutorial
 -----------------------------
 
 ### Section 1:  Packaging
