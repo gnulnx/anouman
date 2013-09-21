@@ -125,7 +125,7 @@ Setup and Deployment Tutorial
 
 **Step 3:** Scp your project to virtual machine we created above.
 
-        scp www.example.com.tar.gz  anouman@www.example.com:/home/anouman
+        scp example.com.tar.gz  anouman@your.ip.address:/home/anouman
 
 **Step 4:** Install anouman into the servers system python repository.
 
@@ -133,7 +133,7 @@ Setup and Deployment Tutorial
 
 **Step 5:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with on command.
 
-        anouman --depoly=example.com.tar.gz
+        anouman --deploy example.com.tar.gz
 
 The first time you call anouman it will download and install virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv and a wrapped 'example.com' virtualenv.
 
