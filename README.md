@@ -125,7 +125,7 @@ Setup and Deployment Tutorial
 
 **Step 3:** Scp your project to virtual machine we created above.
 
-        scp www.example.com.tar.gz  anouman@www.example.com:/home/anouman
+        scp example.com.tar.gz  anouman@your.ip.address:/home/anouman
 
 **Step 4:** Install anouman into the servers system python repository.
 
