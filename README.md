@@ -84,6 +84,17 @@ directly below the line that say's:
 
     root    ALL=(ALL:ALL) ALL
 
+Now we will use ifconfig to determine the public ip address of our new server.
+
+    ifconfig
+    
+Remember this information because we now want to log out and then log back in as our user anouman:
+
+    exit
+    ssh anouman@your.ip.address
+    
+Assuming this worked that is create we are set to start the anouman tutorial
+
 
 **Step 1:** Switch to the python virtualenv you use for development.
         You are using virtualenv for python development right?  If not Anouman should still work
