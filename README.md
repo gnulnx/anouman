@@ -1,7 +1,7 @@
 Anouman Overview
 ================
 
-Anouman is a django site deployment tool that is designed to greatly simplify the process of deploying django projects behind gunicorn/nginx.  In the spirit of reusing great open source software Anouman makes use of virtualenv/virtualenvwrapper to help manage the process of deploying your django instances.  
+Anouman is a django site deployment tool that is designed to greatly simplify the process of deploying django projects behind [gunicorn](http://gunicorn.org/)/[nginx](http://nginx.com/).  In the spirit of reusing great open source software Anouman makes use of [virtualenv](https://pypi.python.org/pypi/virtualenv)/[virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/) to help manage the process of deploying your django instances.  
 
 The easiest way to become familiar with Anouman is to dive in and use it by following along with the tutorial below.  However, before you begin you will first need to install [vagrant](http://www.vagrantup.com/) and [virtualbox](https://www.virtualbox.org/).  We will be using these tools to build a fresh Ubuntu VM to test your django deployment on.
 
@@ -180,7 +180,7 @@ and you can force nginx to do a reload with:
 
     site reload
 
-These site management commands are specific to the site curently being worked on.  If you install another django project anouman will gladly set it up for you and ensure that nginx properly direts traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed on anouman is as simple as switching virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
+These site management commands are specific to the site curently being worked on.  If you install another django project anouman will gladly set it up for you and ensure that nginx properly direts traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed with anouman is as simple as switching wrapped virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
 
 **Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
 
