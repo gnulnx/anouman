@@ -109,7 +109,7 @@ Anouman Setup and Deployment Tutorial
 ### Section 1:  Packaging
 
 **Step 1:** Switch to the python virtualenv you use for development.
-        You are using virtualenv for python development right?  If not Anouman should still work
+        You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  If not Anouman should still work
         with your python system packages.
 
         source /path/to/your/virtualenv/activate
