@@ -82,7 +82,7 @@ setup(
     version=version,
     author='John Furr',
     description=('Rapidly deploy your django project behind gunicornand nginx'),
-    long_description=long_description),
+    long_description=long_description,
     download_url='https://github.com/gnulnx/anouman/tree/0.0.2',
     license='BSD',
     #packages=packages,
