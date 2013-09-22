@@ -1,11 +1,11 @@
 Anouman Overview
 ================
 
-Anouman is a django site deployment tool that is designed to greatly simplify the process of deploying django projects behind gunicorn/nginx.  In the spirit of reusing great open source software Anouman makes use of virtualenv/virtualenvwrapper to help manage the process of deploying your django instances.  
+Anouman is a django site deployment tool that is designed to greatly simplify the process of deploying django projects behind [gunicorn](http://gunicorn.org/)/[nginx](http://nginx.com/).  In the spirit of reusing great open source software Anouman makes use of [virtualenv](https://pypi.python.org/pypi/virtualenv)/[virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/) to help manage the process of deploying your django instances.  
 
 The easiest way to become familiar with Anouman is to dive in and use it by following along with the tutorial below.  However, before you begin you will first need to install [vagrant](http://www.vagrantup.com/) and [virtualbox](https://www.virtualbox.org/).  We will be using these tools to build a fresh Ubuntu VM to test your django deployment on.
 
-*Anouman is still very much alpha stage software.  As such it has only been tested on Ubuntu 12.04 using the BASH shell.  I'd love to hear from others if they get this working in other OS/SHELL combinations.* 
+**Disclaimer:** *Anouman is still very much alpha stage software.  As such it has only been tested on Ubuntu 12.04 using the BASH shell.  I'd love to hear from others if they get this working in other OS/SHELL combinations.*  
 
 
 Virtual Machine Creation and Provisioning
@@ -121,7 +121,7 @@ First set your database host to match the ip address of the virtual machine you 
 
     'HOST': '10.0.1.15'
     
-Next we need ensure that our STATIC_ROOT and MEDIA_ROOT are set correctly.  We recommend installing into the anouman package location.  For example if your domain name is *example.com* and your deployment user is *anouman* then we suggest updating your settings.py file with the following:
+Next we need to ensure that STATIC_ROOT and MEDIA_ROOT are set correctly in our settings.py file.  We recommend installing into the anouman package location.  For example if your domain name is *example.com* and your deployment user is *anouman* then we suggest updating your settings.py file with the following:
 
         STATIC_ROOT=/home/anouman/example.com/static_root
         MEDIA_ROOT=/home/anouman/example.com/media_root
@@ -135,9 +135,9 @@ Now when you run *manage.py collectstatic* your site will stay bundled up in one
 
         anouman --django-project={path to your change project} --domainname=example.com
 
-        What just happened behind the scenes was your django project was copied into a directory named
-        example.com. Inside this directory is another file which contains a listing of python packages you
-        are using for your django projects.  This as determiend from the output of "pip freeze" 
+Behind the scenes your django project was copied into a directory named
+example.com/src. Inside this directory is another file which contains a listing of python packages you
+are using for your django projects.  This was determiend from the output of "pip freeze" 
 
 ### Section2:  Deploying
 
@@ -157,22 +157,22 @@ The first time you call anouman it will download and install virtualenv/virtuale
 
 **Step 7:** We now want to update your .bash_profile so the bash environment for your site is loaded on login.  To do this add the following lines to the end of your .bash_profile.  If you don't have a .bash_profile in your home directory create one.
 
-    source /usr/local/bin/virtualenvwrapper.sh;
+    source /usr/local/bin/virtualenvwrapper.sh
     workon site1.com
     
 Now load the new environment:
 
     source ~/.bash_profile
     
-**Step 8:**  Check your site status:
+**Step 8:**  You now have a few shell commands that were appended to the end of your sites activate site. For instance to check the status of gunicorn/nginx type:
 
     site status
     
-Now let's bring it  up
+Now let's bring it up..
 
     site start
     
-Likewise you can stop you site with:
+Likewise you can stop your site with:
 
     site stop
     
@@ -180,8 +180,10 @@ and you can force nginx to do a reload with:
 
     site reload
 
-**Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to you /etc/hosts
+These site management commands are specific to the site curently being worked on.  If you install another django project anouman will gladly set it up for you and ensure that nginx properly direts traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed with anouman is as simple as switching wrapped virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
+
+**Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
 
     your.site.ip.address   www.site1.com   site1.com
 
-**Step 10:** Now point your browser to either site1.com and you should see you django website.  
+**Step 10:** Now point your browser to either site1.com and you should see you django website.  Enjoy. 
