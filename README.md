@@ -12,7 +12,7 @@ Virtual Machine Creation and Provisioning
 -----------------------------------------
 
 
-**Step 1:** VM creation.  Hopefully by now you have vagrant and virtual box both installed.  What you should do next is create a directory called 'site1' and then place the following contents into a file named 'Vagrantfile'
+**Step 1:** VM creation.  Hopefully by now you have vagrant and virtual box both installed.  Next you should create a directory called 'site1' and place the following vagrant settings into a file named *'Vagrantfile'*
 
     # -*- mode: ruby -*-
     # vi: set ft=ruby :
@@ -48,7 +48,7 @@ Virtual Machine Creation and Provisioning
       #end 
     end
 
-**Step 2:** Copy the following information into a file called 'bootstrap.sh' in the same directory as your Vagrantfile.   This will give us basic provisioning of our new system.  
+**Step 2:** Next you will create a simple bootstrap provision file to use with vagrant VM.  Copy the following into a file called *'bootstrap.sh'* in the same directory as your Vagrantfile.   
 
     #!/usr/bin/env bash
     sudo apt-get update                         # Update apt-get
@@ -73,11 +73,11 @@ When vagrant finishes powering up, log into your VM with:
 
     vagrant ssh
     
-Now we want to add a user that we will use to deploy our django projects.
+Next you should create a new user for deplying your django project.  If you want to follow along closely with this tutorial then create a user name *'anouman'*.
 
     sudo adduser anouman
     
-Next we want to go ahead and give our new user sudo privileges, by editing /etc/sudoers and adding the following line:
+Next you will want to give your new user sudo privileges, by editing /etc/sudoers and adding the following line:
     
     anouman ALL=(ALL:ALL) ALL  
     
@@ -86,20 +86,20 @@ directly below the line that says:
     root    ALL=(ALL:ALL) ALL
 
 
-Next we want to make sure our server has the appropriate database software installed.  This tutorial will assume you are using MySQL
+Next you need to make sure your server has the appropriate database software installed.  This tutorial will assume you are using MySQL since the provision script above already installed mysql-client you only need to install mysql-server.
 
     sudo apt-get install mysql-server
 
-Now we will use ifconfig to determine the public ip address of our new server.
+Now we will use ifconfig to determine the public ip address of your new server.
 
     ifconfig
     
-Remember this information because we now want to log out and then log back in as the user anouman:
+Remember this information because you know want to logout and log back in as your new user.
 
     exit
-    ssh anouman@your.ip.address
+    ssh anouman@your.vm.ip.address
     
-Assuming this worked then you are ready to walk through the anouman tutorial and in the process deploy your django project on a fresh virtual machine.
+Assuming this worked then you are ready to walk through the anouman tutorial and deploy your django project on a fresh virtual machine.
 
 
 
@@ -109,8 +109,7 @@ Anouman Setup and Deployment Tutorial
 ### Section 1:  Packaging
 
 **Step 1:** Switch to the python virtualenv you use for development.
-        You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  If not Anouman should still work
-        with your python system packages.
+        You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  If not Anouman should still work with your python system packages.
 
         source /path/to/your/virtualenv/activate
         pip install anouman
