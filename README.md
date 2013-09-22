@@ -150,7 +150,7 @@ Now when you run *./manage.py collectstatic* your site will stay bundled up in o
 
 The first time you call anouman it will download and install virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv and a wrapped 'example.com' virtualenv.
 
-**Step 7:** Update your .bash_profile so teh bash environment for your site is loaded on login.  Add the following lines to the end of your .bash_profile.  If you don't have a .bash_profile in your home directory create one.
+**Step 7:** We now want to update your .bash_profile so the bash environment for your site is loaded on login.  To do this add the following lines to the end of your .bash_profile.  If you don't have a .bash_profile in your home directory create one.
 
     source /usr/local/bin/virtualenvwrapper.sh;
     workon site1.com
@@ -175,8 +175,8 @@ and you can force nginx to do a reload with:
 
     site reload
 
-**Step 9:**  Make sure your site is runnig (see step 8) and now we will adjust your clients /etc/hosts file to simulate a DNA server.  Add the following line to you /etc/hosts
+**Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to you /etc/hosts
 
     your.site.ip.address   www.site1.com   site1.com
 
-**Step 10:** Now point your browser to either site1.com or www.site1.com and you should see you django website.  
+**Step 10:** Now point your browser to either site1.com and you should see you django website.  
