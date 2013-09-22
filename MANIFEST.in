@@ -1,5 +1,6 @@
 include *.txt
 include *.md
+include *.rst
 include *.template
 
 recursive-include anouman *

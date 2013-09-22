@@ -71,9 +71,9 @@ for dirpath, dirnames, filenames in os.walk(anouman_dir):
         package_files = package_data.setdefault('.'.join(parts), [])
         package_files.extend([os.path.join(path, f) for f in filenames])
 
+    
 with open('README.rst') as file:
     long_description = file.read()
-
 
 version = "0.0.2"
 
