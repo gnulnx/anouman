@@ -7,13 +7,11 @@ then
     exit
 fi
 
-#INITIAL_SETUP=false
 if [[ "$@" == *--deploy* ]]
 then
     cd ~/
 
     if [ ! -d ".virtualenvs/anouman" ]; then
-        #INITIAL_SETUP=true
         echo "Setting up anouman an server"
 
         echo "Install virtualwrapper"
@@ -41,19 +39,3 @@ then
     echo "calling anouman-admin.py $@"
     anouman-admin.py $@
 fi
-
-
-#if [ $INITIAL_SETUP == true ]; 
-#then
-#    echo "Please add the following lines to your .bash_profile (or equivlanent shell settings file)"
-#    echo "   source /usr/local/bin/virtualenvwrapper.sh;"
-#    echo "   workon anouman"
-#    echo "If you are using BASH (recommended) and would like me to update you .bash_profile enter 'y'"
-#    read -a ANS
-#    ANS= $ANS | tr '[A-Z]' '[a-z]'
-#    if [ $ANS == "y" ];
-#    then
-#        echo "source /usr/local/bin/virtualenvwrapper.sh;" >> .bash_profile
-#        echo "workon anouman" >> .bash_profile
-#    fi;
-#fi;
