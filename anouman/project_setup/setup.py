@@ -197,8 +197,10 @@ def deploy_django_project(args):
     # now create the symbolic link to sites-enabled
     os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
 
-    print "If you want this website to be yoru default site then you should add the following line to your .bash_profile"
-    print "workon %s"%( args.domainname )
+    print "\n\n----------------------------------------------"
+    print "Please add the following line(s) to you .bash_profile"
+    print "source /usr/local/bin/virtualenvwrapper.sh;"
+    print "workon %s"%(args.domainname)
 
 def package_django_project(args):
     # settings is the full path
