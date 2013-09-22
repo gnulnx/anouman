@@ -71,6 +71,9 @@ for dirpath, dirnames, filenames in os.walk(anouman_dir):
         package_files = package_data.setdefault('.'.join(parts), [])
         package_files.extend([os.path.join(path, f) for f in filenames])
 
+with open('README.rst') as file:
+    long_description = file.read()
+
 
 version = "0.0.2"
 
@@ -78,7 +81,8 @@ setup(
     name='anouman',
     version=version,
     author='John Furr',
-    description=('rapidly create and deploy django --> gunicorn --> nginx project'),
+    description=('Rapidly deploy your django project behind gunicornand nginx'),
+    long_description=long_description),
     download_url='https://github.com/gnulnx/anouman/tree/0.0.2',
     license='BSD',
     #packages=packages,
