@@ -150,16 +150,33 @@ Now when you run *./manage.py collectstatic* your site will stay bundled up in o
 
 The first time you call anouman it will download and install virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv and a wrapped 'example.com' virtualenv.
 
-**Step 7:** Restart your server to bring everything online.  If you are using vagrant to follow along you may need to give the server a minute or two after calling 'vagrant up' returns before your website comes on line.  There seems to be either a bug in virtualbox or vagrant with host networking at times...
+**Step 7:** Update your .bash_profile so teh bash environment for your site is loaded on login.  Add the following lines to the end of your .bash_profile.  If you don't have a .bash_profile in your home directory create one.
 
-    exit  
-    vagrant halt
-    vagrant up
+    source /usr/local/bin/virtualenvwrapper.sh;
+    workon site1.com
     
-              
-**Step 8**  modify your /etc/hosts file to reflect the domainname/ip address of your server.  For example if your ipaddress is 10.0.1.12 and your domainname is *example.com*  then add the following line to your /etc/hosts file.
+Now load the new environment:
 
-    10.0.1.12   www.example.com   example.com
+    source ~/.bash_profile
+    
+**Step 8:**  Check your site status:
 
+    site status
+    
+Now let's bring it  up
 
-If everything works as expected you should be able to point your browser to the ip address of your virtual machine
+    site start
+    
+Likewise you can stop you site with:
+
+    site stop
+    
+and you can force nginx to do a reload with:
+
+    site reload
+
+**Step 9:**  Make sure your site is runnig (see step 8) and now we will adjust your clients /etc/hosts file to simulate a DNA server.  Add the following line to you /etc/hosts
+
+    your.site.ip.address   www.site1.com   site1.com
+
+**Step 10:** Now point your browser to either site1.com or www.site1.com and you should see you django website.  
