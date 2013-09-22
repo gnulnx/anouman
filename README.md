@@ -117,7 +117,7 @@ Anouman Setup and Deployment Tutorial
 
 **Step 2:** Update your django settings file to reflect the Virtual Machine you are about to deploy it on.
 
-First set you database host to match the ip address of the virtual machine you created above.  For example if your virtual machine ip is 10.0.1.15 then make sure you have the followign in the DATABASES section of your settings file:
+First set your database host to match the ip address of the virtual machine you created above.  For example if your virtual machine ip is 10.0.1.15 then make sure you have the following in the DATABASES section of your settings file:
 
     'HOST': '10.0.1.15'
     
@@ -126,30 +126,30 @@ Next we need ensure that our STATIC_ROOT and MEDIA_ROOT are set correctly.  We r
         STATIC_ROOT=/home/anouman/example.com/static_root
         MEDIA_ROOT=/home/anouman/example.com/media_root
         
-Now when you run *./manage.py collectstatic* your site will stay bundled up in one nice neat directory, which turns out to be incredibly useful if you want to deploy and manage more than one site...
+Now when you run *manage.py collectstatic* your site will stay bundled up in one nice neat directory, which turns out to be incredibly useful if you want to deploy and manage more than one site...
 
 **Step 3:** Create an anouman package that will be deployable on an anouman loaded
         server.  Start by navigating to the directory containing your django project.
-        This is the directory you originall ran "django-admin.py startproject".
+        This is the directory you originally ran "django-admin.py startproject" from.
         
 
         anouman --django-project={path to your change project} --domainname=example.com
 
         What just happened behind the scenes was your django project was copied into a directory named
-        example.com. Inside this directory is another file which contains a listing of your django projects 
-        python packages generated from the output of:  pip --freeze 
+        example.com. Inside this directory is another file which contains a listing of python packages you
+        are using for your django projects.  This as determiend from the output of "pip freeze" 
 
 ### Section2:  Deploying
 
-**Step 4:** Scp your project to virtual machine we created above.
+**Step 4:** Scp your project to the virtual machine we created above.
 
-        scp example.com.tar.gz  anouman@your.ip.address:/home/anouman
+        scp example.com.tar.gz  anouman@your.vm.ip.address:/home/anouman
 
 **Step 5:** Install anouman into the servers system python repository.
 
         sudo pip install anouman
 
-**Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with on command.
+**Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with one command.
 
         anouman --deploy example.com.tar.gz
 
