@@ -22,100 +22,29 @@ from anouman.templates.nginx import (
     nginx_context,
 )
 
+from anouman.templates.commands import commands
+
+
 from anouman.exceptions import (
     MultipleSettingError,
     NoSettingsError,
     MultipleWSGIError,
     NoWSGIError,
+    MultipleMANAGEError,
+    NoMANAGEError,
 )
 
-def find_file(root_dir, pattern):
-    matches = []
-    for root, dirnames, filenames in os.walk(root_dir):
-        for filename in fnmatch.filter(filenames, pattern):
-            matches.append(os.path.join(root, filename))
-    return matches
-
-def get_settings(args):
-    """
-        This function checks for the existence of the settings file.
-
-        If the --settings options is specified then we simply
-        check to see if the file exists and if so return the name of the
-        file.
-
-        If no --settings option was given then we look for settings.py
-        recursivly in the directory defined by --django-project.
-          -- If multiple settings.py are found we throw an exception.
-          -- If not settings.py is found we throw an exception.
-          -- If one settings.py is found we return it's path.
-    """
-    settings_path=''
-    if not args.settings:
-        matches = find_file(args.django_project, 'settings.py')
-        if len(matches) > 1:
-            raise MultipleSettingError(matches)
-        elif len(matches) == 0:
-            raise NoSettingsError()
-        settings_path= matches[0]
-    elif not os.path.isfile(args.settings):
-        raise NoSettingsError() 
-    else:
-        settings_path = args.settings
-   
-    # We now have the path to the wsgi.py modules, but we need
-    # to convert it to python module format:  website.wsgi
-    #tmp = settings_path.split( os.path.abspath(args.django_project) )
-    tmp = settings_path.split(args.django_project)
-    if len(tmp) == 2:
-        return [
-            os.path.abspath(settings_path), 
-            tmp[1][1:].replace("/", ".").replace(".py", "")
-        ]
-    else:
-        raise NoSettingsError( str(tmp) )
-    
-def get_wsgi(args):
-    """
-        This function checks for the existence of the wsgi file.
-
-        If the --wsgi options is specified then we simply
-        check to see if the file exists and if so return the name of the
-        file.
-
-        If no --wsgi option was given then we look for settings.py
-        recursivly in the directory defined by --django-project.
-          -- If multiple wsgi.py are found we throw an exception.
-          -- If not wsgi.py is found we throw an exception.
-          -- If one wsgi.py is found we return it's path.
-    """
-    wsgi_path = ''
-    if not args.wsgi:
-        matches = find_file(args.django_project, 'wsgi.py')
-        if len(matches) > 1:
-            raise MultipleWSGIError(matches)
-        if len(matches) == 0:
-            raise NoWSGIError()
-        wsgi_path=os.path.abspath( matches[0] )
-    elif not os.path.isfile(args.wsgi):
-        raise NoWSGIError() 
-    else:
-        wsgi_path = os.path.abspath( args.wsgi )
-
-    # We now have the path to the wsgi.py modules, but we need
-    # to convert it to python module format:  website.wsgi
-    tmp = wsgi_path.split( os.path.abspath(args.django_project) )
-    if len(tmp) == 2:
-        return tmp[1][1:].replace("/", ".").replace(".py", "")
-    else:
-        raise NoWSGIError( str(tmp) )
+from anouman.utils.find_files import (
+    get_settings,
+    get_wsgi,
+    get_manage
+)
 
 def deploy_django_project(args):
-    print "deploy_django_project 1"
+    print "deploy_django_project"
     """
         The Very First thing we want to do is unpack the project
     """
-    print "unzipping: ", args.deploy
     subprocess.call(["tar", "xvfz", args.deploy])
     
     # Set both args.domainname  AND args.django_project to the deploy basename
@@ -134,17 +63,29 @@ def deploy_django_project(args):
     [settings, SETTINGS] = get_settings(args)
     WSGI = get_wsgi(args)
 
+    # Get the absolute path to the manage.py command
+    MANAGE = get_manage(args)
 
     print "SETTINGS: ", SETTINGS
     print "WSGI: ", WSGI
 
     BIN=os.path.abspath("%s/bin"%(VIRTUALENV))
     PIP="%s/pip"%(BIN)
+    PYTHON="%s/python"%(BIN)
+    ACTIVATE="%s/activate"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
     GUNICORN_START="%s/gunicorn_start"%(BIN)
+    
+    ## Now add a few shell commands to the activate script that will be
+    ## unique to each deployed website
+    commands.context['DOMAINNAME'] = args.domainname
+    cmd_str = commands.get_commands(commands.context)
+    with open(ACTIVATE, 'a') as f:   
+        f.write(cmd_str)
 
-    print "deploy_django_project 2"
 
+    # Now we loop over the list of packages we stored during the packaging phase
+    # and try to install them with pip
     pkg_success = []
     pgk_fails = []
     with open("%s/pip_packages.txt"%(args.domainname)) as f:
@@ -163,6 +104,10 @@ def deploy_django_project(args):
     print "FAIL:    %s" %(len(pgk_fails))
     for f in pgk_fails:
         print "\t*\t%s"%(f)
+
+
+    # Now we run the collectstatic command
+    subprocess.call([PYTHON, MANAGE, "collectstatic"])
 
 
     """
@@ -230,10 +175,7 @@ def deploy_django_project(args):
         templ_file: anouman/templates/nginx/ngix_site.template
          
     """
-    # Step 1.  update the nginx context
-    print "settings: ", settings
-    print "SETTINGS: ", SETTINGS
-    ## Import the users django settigns file and grab the STATIC_ROOT and MEDIA_ROOT vars
+    ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
     sys.path.append(os.path.dirname(settings))
     import settings
     nginx_context.update({
@@ -255,6 +197,8 @@ def deploy_django_project(args):
     # now create the symbolic link to sites-enabled
     os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
 
+    print "If you want this website to be yoru default site then you should add the following line to your .bash_profile"
+    print "workon %s"%( args.domainname )
 
 def package_django_project(args):
     # settings is the full path

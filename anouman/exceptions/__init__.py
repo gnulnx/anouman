@@ -21,7 +21,7 @@ class NotFoundError(Exception):
 class MultipleSettingError(MultipleError):
     def __str__(self):
         out = repr(self.value)
-        out = out + "\ntry running with --settings.py"
+        out = out + "\ntry running with --settings"
         return out
 
 class NoSettingsError(NotFoundError):
@@ -35,10 +35,27 @@ class NoSettingsError(NotFoundError):
 class MultipleWSGIError(MultipleError):
     def __str__(self):
         out = repr(self.value)
-        out = out + "\ntry running with --wsgi.py"
+        out = out + "\ntry running with --wsgi"
         return out
 
 class NoWSGIError(NotFoundError):
     def __str__(self):
         if not self.msg:
             return "wsgi.py not found"
+
+"""
+    manage.py related exceptions
+"""
+class MultipleMANAGEError(MultipleError):
+    def __str__(self):
+        out = repr(self.value)
+        out = out + "\ntry running with --manage"
+        return out
+
+
+class NoMANAGEError(NotFoundError):
+    def __str__(self):
+        if not self.msg:
+            return "manage.py not found"
+
+

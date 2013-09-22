@@ -50,14 +50,20 @@ def get_args():
     )
     
     parser.add_argument('--settings',
-        help='Create deployment for settings',
+        help='Specify path to settings.py',
         dest='settings',
         default=False,
     )
 
     parser.add_argument('--wsgi',
-        help='Create deployment for wsgi',
+        help='Specify path to wsgi.py',
         dest='wsgi',
+        default=False,
+    )
+
+    parser.add_argument('--manage',
+        help='Specify the path to your projects manage.py scrpt',
+        dest='manage',
         default=False,
     )
 
