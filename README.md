@@ -157,7 +157,7 @@ The first time you call anouman it will download and install virtualenv/virtuale
 **Step 7:** We now want to update your .bash_profile so the bash environment for your site is loaded on login.  To do this add the following lines to the end of your .bash_profile.  If you don't have a .bash_profile in your home directory create one.
 
     source /usr/local/bin/virtualenvwrapper.sh
-    workon site1.com
+    workon example.com
     
 Now load the new environment:
 
@@ -183,6 +183,6 @@ These site management commands are specific to the site curently being worked on
 
 **Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
 
-    your.site.ip.address   www.site1.com   site1.com
+    your.site.ip.address   www.example.com   example.com
 
 **Step 10:** Now point your browser to either site1.com and you should see you django website.  Enjoy. 
