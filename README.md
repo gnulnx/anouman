@@ -135,9 +135,9 @@ Now when you run *manage.py collectstatic* your site will stay bundled up in one
 
         anouman --django-project={path to your change project} --domainname=example.com
 
-What just happened behind the scenes was your django project was copied into a directory named
-example.com. Inside this directory is another file which contains a listing of python packages you
-are using for your django projects.  This as determiend from the output of "pip freeze" 
+Behind the scenes your django project was copied into a directory named
+example.com/src. Inside this directory is another file which contains a listing of python packages you
+are using for your django projects.  This was determiend from the output of "pip freeze" 
 
 ### Section2:  Deploying
 
