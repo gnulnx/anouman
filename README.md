@@ -85,6 +85,11 @@ directly below the line that say's:
 
     root    ALL=(ALL:ALL) ALL
 
+
+Next we want to make sure our server has the appropriate database software installed.  This tutorial will assume you are using MySQL
+
+    sudo apt-get install mysql-server
+
 Now we will use ifconfig to determine the public ip address of our new server.
 
     ifconfig
