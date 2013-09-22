@@ -72,7 +72,7 @@ for dirpath, dirnames, filenames in os.walk(anouman_dir):
         package_files.extend([os.path.join(path, f) for f in filenames])
 
 
-version = "0.0.1"
+version = "0.0.2"
 
 setup(
     name='anouman',
