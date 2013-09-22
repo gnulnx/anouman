@@ -120,16 +120,16 @@ First set your database host to match the ip address of the virtual machine you 
 
     'HOST': '10.0.1.15'
     
-Next we need to ensure that STATIC_ROOT and MEDIA_ROOT are set correctly in our settings.py file.  We recommend installing into the anouman package location.  For example if your domain name is *example.com* and your deployment user is *anouman* then we suggest updating your settings.py file with the following:
+Next we need to ensure that STATIC_ROOT and MEDIA_ROOT are set correctly in your settings.py file.  I recommend installing into the anouman package location...  For example if your domain name is *example.com* and your deployment user is *anouman* then I reccomend updating your settings.py file with the following:
 
         STATIC_ROOT=/home/anouman/example.com/static_root
         MEDIA_ROOT=/home/anouman/example.com/media_root
         
 Now when you run *manage.py collectstatic* your site will stay bundled up in one nice neat directory, which turns out to be incredibly useful if you want to deploy and manage more than one site...
 
-**Step 3:** Create an anouman package that will be deployable on an anouman loaded
+**Step 3:** Next you will create an anouman package that will be deployable on an anouman loaded
         server.  Start by navigating to the directory containing your django project.
-        This is the directory you originally ran "django-admin.py startproject" from.
+        This is the directory you originally ran "django-admin.py startproject" from and type the following.
         
 
         anouman --django-project={path to your change project} --domainname=example.com
@@ -163,7 +163,7 @@ Now load the new environment:
 
     source ~/.bash_profile
     
-**Step 8:**  You now have a few shell commands that were appended to the end of your sites activate site. For instance to check the status of gunicorn/nginx type:
+**Step 8:**  You now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
 
     site status
     
