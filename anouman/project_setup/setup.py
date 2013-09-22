@@ -61,13 +61,8 @@ def deploy_django_project(args):
     #settings is the full path
     #SETTINGS is the django project path:  ex finance.settings
     [settings, SETTINGS] = get_settings(args)
-    WSGI = get_wsgi(args)
-
-    # Get the absolute path to the manage.py command
-    MANAGE = get_manage(args)
-
-    print "SETTINGS: ", SETTINGS
-    print "WSGI: ", WSGI
+    WSGI = get_wsgi(args)       # get module path to wsgi.py
+    MANAGE = get_manage(args) #get abspath of manage.py
 
     BIN=os.path.abspath("%s/bin"%(VIRTUALENV))
     PIP="%s/pip"%(BIN)
@@ -163,7 +158,7 @@ def deploy_django_project(args):
         f.write(build_init(init_context))
 
     print "We need to copy the website startup scripts to /etc/init/"
-    print "This requires you to enter you sudo password now."
+    print "This will require you to enter your sudo password now."
     os.system("sudo mv %s /etc/init/%s"%(NAME, NAME) )
 
 
@@ -190,15 +185,13 @@ def deploy_django_project(args):
     with open(NGINX_CONF, 'w') as f:
         f.write( nginx_upstart(nginx_context) )
 
-    print "We need to copy the nginx.domainname.conf file to /etc/init/"
+    print "We need to copy the nginx.domainname.conf file to /etc/nginx/sites-available/"
     print "This will require sudo"
-    print "cmd: ", "sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF)
     os.system("sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF) )
-    # now create the symbolic link to sites-enabled
     os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
 
     print "\n\n----------------------------------------------"
-    print "Please add the following line(s) to you .bash_profile"
+    print "Please add the following line(s) to your .bash_profile"
     print "source /usr/local/bin/virtualenvwrapper.sh;"
     print "workon %s"%(args.domainname)
 
