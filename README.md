@@ -157,22 +157,22 @@ The first time you call anouman it will download and install virtualenv/virtuale
 
 **Step 7:** We now want to update your .bash_profile so the bash environment for your site is loaded on login.  To do this add the following lines to the end of your .bash_profile.  If you don't have a .bash_profile in your home directory create one.
 
-    source /usr/local/bin/virtualenvwrapper.sh;
+    source /usr/local/bin/virtualenvwrapper.sh
     workon site1.com
     
 Now load the new environment:
 
     source ~/.bash_profile
     
-**Step 8:**  Check your site status:
+**Step 8:**  You now have a few shell commands that were appended to the end of your sites activate site. For instance to check the status of gunicorn/nginx type:
 
     site status
     
-Now let's bring it  up
+Now let's bring it up..
 
     site start
     
-Likewise you can stop you site with:
+Likewise you can stop your site with:
 
     site stop
     
@@ -180,8 +180,10 @@ and you can force nginx to do a reload with:
 
     site reload
 
-**Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to you /etc/hosts
+These site management commands are specific to the site curently being worked on.  If you install another django project anouman will gladly set it up for you and ensure that nginx properly direts traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed on anouman is as simple as switching virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
+
+**Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
 
     your.site.ip.address   www.site1.com   site1.com
 
-**Step 10:** Now point your browser to either site1.com and you should see you django website.  
+**Step 10:** Now point your browser to either site1.com and you should see you django website.  Enjoy. 
