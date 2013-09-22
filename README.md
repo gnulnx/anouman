@@ -121,7 +121,7 @@ First set your database host to match the ip address of the virtual machine you 
 
     'HOST': '10.0.1.15'
     
-Next we need ensure that our STATIC_ROOT and MEDIA_ROOT are set correctly.  We recommend installing into the anouman package location.  For example if your domain name is *example.com* and your deployment user is *anouman* then we suggest updating your settings.py file with the following:
+Next we need to ensure that STATIC_ROOT and MEDIA_ROOT are set correctly in our settings.py file.  We recommend installing into the anouman package location.  For example if your domain name is *example.com* and your deployment user is *anouman* then we suggest updating your settings.py file with the following:
 
         STATIC_ROOT=/home/anouman/example.com/static_root
         MEDIA_ROOT=/home/anouman/example.com/media_root
