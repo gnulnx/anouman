@@ -1,38 +1,22 @@
 import os, sys, stat
+from os.path import expanduser
 import getpass
-import fnmatch
 import subprocess
-from anouman.templates.gunicorn_start import  (
-    gunicorn_start,
-    gunicorn_context, 
-)
 
+# TODO refactor this template
 from anouman.templates.gunicorn_start import (
     gunicorn_start,
     gunicorn_context,
 )
 
-from anouman.templates.init_script import (
-    build_init,
-    init_context,
-)
-
+# TODO Refactor this template
 from anouman.templates.nginx import (
     nginx_upstart,
     nginx_context,
 )
 
+from anouman.templates.init_script import gunicorn_upstart
 from anouman.templates.commands import commands
-
-
-from anouman.exceptions import (
-    MultipleSettingError,
-    NoSettingsError,
-    MultipleWSGIError,
-    NoWSGIError,
-    MultipleMANAGEError,
-    NoMANAGEError,
-)
 
 from anouman.utils.find_files import (
     get_settings,
@@ -44,7 +28,9 @@ def deploy_django_project(args):
     """
         The Very First thing we want to do is unpack the project
     """
-    subprocess.call(["tar", "xvfz", args.deploy])
+    # subproces, tar returns zero on success...
+    if subprocess.call(["tar", "xvfz", args.deploy]):
+        raise Exception( "Call to subprocess failed" )
     
     # Set both args.domainname  AND args.django_project to the deploy basename
     args.domainname = args.deploy.split(".tar.gz")[0]
@@ -54,7 +40,8 @@ def deploy_django_project(args):
     # But since it's derived from a soruced file it's not accessible
     # so instead we just call virtualenv ourselves and save in the
     # default ~/.virtualenvs/  directory
-    VIRTUALENV = ".virtualenvs/%s"%(args.domainname)
+    home = expanduser("~")
+    VIRTUALENV = home+"/.virtualenvs/%s"%(args.domainname)
     subprocess.call(["virtualenv", VIRTUALENV])
 
     #settings is the full path
@@ -142,14 +129,16 @@ def deploy_django_project(args):
         Now we create the gunicorn upstart scripts
     """
     NAME=args.domainname+".conf"
-    context = {
+    gunicorn_upstart.context.update({
         'GUNICORN_START':GUNICORN_START,
-        'DOMAINNAME':args.domainname, 
-    }
-
-    init_context.update(context)
+        'DOMAINNAME':args.domainname,
+    })
     with open(NAME, 'w') as f:
-        f.write(build_init(init_context))
+        f.write(
+            gunicorn_upstart.build_init(
+                gunicorn_upstart.context
+            )
+        )
 
     print "We need to copy the website startup scripts to /etc/init/"
     print "This will require you to enter your sudo password now."
@@ -170,13 +159,12 @@ def deploy_django_project(args):
     if settings.STATIC_ROOT[-1] is not '/':
         settings.STATIC_ROOT = settings.STATIC_ROOT = "/"
 
-    # Create the log directory
+    # Create the log directory, defaults to domain/logs
+    # TODO add --logs option to allow user to specify log directory
     PROJECT_ROOT = "/".join( settings.STATIC_ROOT.split("/")[:-2] )
-    print "PROJECT_ROOT: ", PROJECT_ROOT
-    LOG_DIR = PROJECT_ROOT+"/logs"
+    LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
     os.makedirs(LOG_DIR)
-    print "LOG_DIR: ", LOG_DIR
-    raw_input()
+
     nginx_context.update({
         'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
         'DOMAINNAME':args.domainname,
@@ -187,7 +175,6 @@ def deploy_django_project(args):
         
     })
 
-    print "nginx_context: ", nginx_context
     NGINX_CONF='nginx.%s.conf'%(args.domainname)
     with open(NGINX_CONF, 'w') as f:
         f.write( nginx_upstart(nginx_context) )
@@ -201,17 +188,15 @@ def deploy_django_project(args):
     print "Please add the following line(s) to your .bash_profile"
     print "source /usr/local/bin/virtualenvwrapper.sh;"
     print "workon %s"%(args.domainname)
+    print "\nThen call source on .bash_profile"
+    print "\n$source ~/.bash_profile"
 
 def package_django_project(args):
     # settings is the full path
     # SETTINGS is the django projec path, exL  finance.settings
     [settings, SETTINGS] = get_settings(args)
-    WSGI = get_wsgi(args)
     
-    BIN=os.path.abspath("%s/bin"%(args.domainname))
-    PIP="%s/pip"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
-    GUNICORN_START="%s/gunicorn_start"%(BIN)
         
     os.makedirs(args.domainname)
     
@@ -247,7 +232,6 @@ def django_project(args):
 def new_project(args):
     BIN="%s/bin"%(args.domainname)
     PIP="%s/pip"%(BIN)
-    GUNICORN="%s/gunicorn"%(BIN)
     GUNICORN_START="%s/gunicorn_start.py"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
     ADMIN='%s/django-admin.py'%(BIN)
@@ -273,4 +257,5 @@ def new_project(args):
 
 
 if __name__ == '__main__':
-    setup("TestENV")
+    print "This does nothing"
+    pass

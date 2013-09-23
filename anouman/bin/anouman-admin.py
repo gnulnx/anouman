@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import os 
 import argparse
-import subprocess
 
-from os.path import expanduser
 
 import anouman.project_setup.setup as setup
 

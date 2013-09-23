@@ -9,9 +9,7 @@ fi
 
 if [[ "$@" == *--deploy* ]]
 then
-    cd ~/
-
-    if [ ! -d ".virtualenvs/anouman" ]; then
+    if [ ! -d "~/.virtualenvs/anouman" ]; then
         echo "Setting up anouman an server"
 
         echo "Install virtualwrapper"
@@ -25,18 +23,16 @@ then
         echo "Installing django into anouman virtualenv"
         pip install django -q
 
-        .virtualenvs/anouman/bin/pip install /vagrant/anouman-0.0.4.0.tar.gz --upgrade
+        ~/.virtualenvs/anouman/bin/pip install /vagrant/anouman-0.0.4.0.tar.gz --upgrade
         ## TODO  pip install anouman
         #pip install anouman  --upgrade -q
     
         echo "anouman basic setup now finished"
-        
     fi
 fi
 
 if [ $1 ];
 then
-    cd ~/
     echo "calling anouman-admin.py $@"
     anouman-admin.py $@
 fi

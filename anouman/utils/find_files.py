@@ -1,6 +1,15 @@
 import os
 import fnmatch
 
+from anouman.exceptions import (
+    MultipleSettingError,
+    NoSettingsError,
+    MultipleWSGIError,
+    NoWSGIError,
+    MultipleMANAGEError,
+    NoMANAGEError,
+)
+
 def find_file(root_dir, pattern):
     """
         This is a generic recursive grep function
@@ -31,6 +40,8 @@ def get_settings(args):
         if len(matches) > 1:
             raise MultipleSettingError(matches)
         elif len(matches) == 0:
+            print "args.django_project: ", args.django_project
+            print "search path: %s"%(os.path.abspath(args.django_project))
             raise NoSettingsError()
         settings_path= matches[0]
     elif not os.path.isfile(args.settings):
