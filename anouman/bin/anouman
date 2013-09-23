@@ -10,9 +10,9 @@ fi
 if [[ "$@" == *--deploy* ]]
 then
     # TODO:  Do you really want to change to the users home directory?
-    cd ~/
+    #cd ~/
 
-    if [ ! -d ".virtualenvs/anouman" ]; then
+    if [ ! -d "~/.virtualenvs/anouman" ]; then
         echo "Setting up anouman an server"
 
         echo "Install virtualwrapper"
@@ -26,7 +26,7 @@ then
         echo "Installing django into anouman virtualenv"
         pip install django -q
 
-        .virtualenvs/anouman/bin/pip install /vagrant/anouman-0.0.4.0.tar.gz --upgrade
+        ~/.virtualenvs/anouman/bin/pip install /vagrant/anouman-0.0.4.0.tar.gz --upgrade
         ## TODO  pip install anouman
         #pip install anouman  --upgrade -q
     

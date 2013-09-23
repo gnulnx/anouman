@@ -13,13 +13,13 @@ respawn
 """
 
 
-init_context = {
+context = {
     'GUNICORN_START':'',    # The abspath to the gunicorn_start script
     'DOMAINNAME':'',        # The domain name
 }
 
 
-def build_init(context=init_context):
+def build_init(context=context):
     t = Template( gunicorn_upstart )
     c = Context( context )
     return t.render(c)

@@ -1,4 +1,5 @@
 import os, sys, stat
+from os.path import expanduser
 import getpass
 import subprocess
 
@@ -31,7 +32,9 @@ def deploy_django_project(args):
     """
         The Very First thing we want to do is unpack the project
     """
-    subprocess.call(["tar", "xvfz", args.deploy])
+    # subproces, tar returns zero on success...
+    if subprocess.call(["tar", "xvfz", args.deploy]):
+        raise Exception( "Call to subprocess failed" )
     
     # Set both args.domainname  AND args.django_project to the deploy basename
     args.domainname = args.deploy.split(".tar.gz")[0]
@@ -41,7 +44,8 @@ def deploy_django_project(args):
     # But since it's derived from a soruced file it's not accessible
     # so instead we just call virtualenv ourselves and save in the
     # default ~/.virtualenvs/  directory
-    VIRTUALENV = ".virtualenvs/%s"%(args.domainname)
+    home = expanduser("~")
+    VIRTUALENV = home+"/.virtualenvs/%s"%(args.domainname)
     subprocess.call(["virtualenv", VIRTUALENV])
 
     #settings is the full path
@@ -129,12 +133,16 @@ def deploy_django_project(args):
         Now we create the gunicorn upstart scripts
     """
     NAME=args.domainname+".conf"
-    init_context.update({
+    gunicorn_upstart.context.update({
         'GUNICORN_START':GUNICORN_START,
         'DOMAINNAME':args.domainname,
     })
     with open(NAME, 'w') as f:
-        f.write(gunicorn_upstart.build_init(init_context))
+        f.write(
+            gunicorn_upstart.build_init(
+                gunicorn_upstart.context
+            )
+        )
 
     print "We need to copy the website startup scripts to /etc/init/"
     print "This will require you to enter your sudo password now."
@@ -155,13 +163,12 @@ def deploy_django_project(args):
     if settings.STATIC_ROOT[-1] is not '/':
         settings.STATIC_ROOT = settings.STATIC_ROOT = "/"
 
-    # Create the log directory
+    # Create the log directory, defaults to domain/logs
+    # TODO add --logs option to allow user to specify log directory
     PROJECT_ROOT = "/".join( settings.STATIC_ROOT.split("/")[:-2] )
-    print "PROJECT_ROOT: ", PROJECT_ROOT
-    LOG_DIR = PROJECT_ROOT+"/logs"
+    LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
     os.makedirs(LOG_DIR)
-    print "LOG_DIR: ", LOG_DIR
-    raw_input()
+
     nginx_context.update({
         'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
         'DOMAINNAME':args.domainname,
@@ -172,7 +179,6 @@ def deploy_django_project(args):
         
     })
 
-    print "nginx_context: ", nginx_context
     NGINX_CONF='nginx.%s.conf'%(args.domainname)
     with open(NGINX_CONF, 'w') as f:
         f.write( nginx_upstart(nginx_context) )
@@ -186,6 +192,8 @@ def deploy_django_project(args):
     print "Please add the following line(s) to your .bash_profile"
     print "source /usr/local/bin/virtualenvwrapper.sh;"
     print "workon %s"%(args.domainname)
+    print "\nThen call source on .bash_profile"
+    print "\n$source ~/.bash_profile"
 
 def package_django_project(args):
     # settings is the full path
