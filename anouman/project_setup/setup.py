@@ -3,23 +3,19 @@ from os.path import expanduser
 import getpass
 import subprocess
 
+# TODO refactor this template
 from anouman.templates.gunicorn_start import (
     gunicorn_start,
     gunicorn_context,
 )
 
-from anouman.templates.init_script import gunicorn_upstart
-#from anouman.templates.init_script import (
-#    build_init,
-#    init_context,
-#)
-
-
+# TODO Refactor this template
 from anouman.templates.nginx import (
     nginx_upstart,
     nginx_context,
 )
 
+from anouman.templates.init_script import gunicorn_upstart
 from anouman.templates.commands import commands
 
 from anouman.utils.find_files import (
