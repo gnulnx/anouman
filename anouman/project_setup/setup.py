@@ -7,10 +7,12 @@ from anouman.templates.gunicorn_start import (
     gunicorn_context,
 )
 
-from anouman.templates.init_script import (
-    build_init,
-    init_context,
-)
+from anouman.templates.init_script import gunicorn_upstart
+#from anouman.templates.init_script import (
+#    build_init,
+#    init_context,
+#)
+
 
 from anouman.templates.nginx import (
     nginx_upstart,
@@ -127,14 +129,12 @@ def deploy_django_project(args):
         Now we create the gunicorn upstart scripts
     """
     NAME=args.domainname+".conf"
-    context = {
+    init_context.update({
         'GUNICORN_START':GUNICORN_START,
-        'DOMAINNAME':args.domainname, 
-    }
-
-    init_context.update(context)
+        'DOMAINNAME':args.domainname,
+    })
     with open(NAME, 'w') as f:
-        f.write(build_init(init_context))
+        f.write(gunicorn_upstart.build_init(init_context))
 
     print "We need to copy the website startup scripts to /etc/init/"
     print "This will require you to enter your sudo password now."
