@@ -1,6 +1,15 @@
 import os
 import fnmatch
 
+from anouman.exceptions import (
+    MultipleSettingError,
+    NoSettingsError,
+    MultipleWSGIError,
+    NoWSGIError,
+    MultipleMANAGEError,
+    NoMANAGEError,
+)
+
 def find_file(root_dir, pattern):
     """
         This is a generic recursive grep function

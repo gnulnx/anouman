@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from django.template import Template, Context
-import os
 
 commands = """
 #This section defined commands specified by Anouman

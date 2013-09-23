@@ -1,11 +1,6 @@
 import os, sys, stat
 import getpass
-import fnmatch
 import subprocess
-from anouman.templates.gunicorn_start import  (
-    gunicorn_start,
-    gunicorn_context, 
-)
 
 from anouman.templates.gunicorn_start import (
     gunicorn_start,
@@ -23,16 +18,6 @@ from anouman.templates.nginx import (
 )
 
 from anouman.templates.commands import commands
-
-
-from anouman.exceptions import (
-    MultipleSettingError,
-    NoSettingsError,
-    MultipleWSGIError,
-    NoWSGIError,
-    MultipleMANAGEError,
-    NoMANAGEError,
-)
 
 from anouman.utils.find_files import (
     get_settings,
@@ -206,12 +191,8 @@ def package_django_project(args):
     # settings is the full path
     # SETTINGS is the django projec path, exL  finance.settings
     [settings, SETTINGS] = get_settings(args)
-    WSGI = get_wsgi(args)
     
-    BIN=os.path.abspath("%s/bin"%(args.domainname))
-    PIP="%s/pip"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
-    GUNICORN_START="%s/gunicorn_start"%(BIN)
         
     os.makedirs(args.domainname)
     
@@ -247,7 +228,6 @@ def django_project(args):
 def new_project(args):
     BIN="%s/bin"%(args.domainname)
     PIP="%s/pip"%(BIN)
-    GUNICORN="%s/gunicorn"%(BIN)
     GUNICORN_START="%s/gunicorn_start.py"%(BIN)
     DJANGO_VERSION="django%s"%(args.django_version)
     ADMIN='%s/django-admin.py'%(BIN)
@@ -273,4 +253,5 @@ def new_project(args):
 
 
 if __name__ == '__main__':
-    setup("TestENV")
+    print "This does nothing"
+    pass
