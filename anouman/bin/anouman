@@ -9,6 +9,7 @@ fi
 
 if [[ "$@" == *--deploy* ]]
 then
+    # TODO:  Do you really want to change to the users home directory?
     cd ~/
 
     if [ ! -d ".virtualenvs/anouman" ]; then
@@ -36,7 +37,6 @@ fi
 
 if [ $1 ];
 then
-    cd ~/
     echo "calling anouman-admin.py $@"
     anouman-admin.py $@
 fi
