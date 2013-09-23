@@ -41,7 +41,6 @@ from anouman.utils.find_files import (
 )
 
 def deploy_django_project(args):
-    print "deploy_django_project"
     """
         The Very First thing we want to do is unpack the project
     """
@@ -73,6 +72,7 @@ def deploy_django_project(args):
     
     ## Now add a few shell commands to the activate script that will be
     ## unique to each deployed website
+    # TODO You can potentially use virtualenv hooks.
     commands.context['DOMAINNAME'] = args.domainname
     cmd_str = commands.get_commands(commands.context)
     with open(ACTIVATE, 'a') as f:   
@@ -132,16 +132,10 @@ def deploy_django_project(args):
     gunicorn_context.update(context)
 
     with open(GUNICORN_START, 'w') as f:
-        f.write(
-            gunicorn_start(
-                gunicorn_context
-            )
-        )
+        f.write( gunicorn_start( gunicorn_context ) )
+
     # Set Permissions on the GUNICORN file
-    os.chmod(
-        GUNICORN_START,
-        stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH
-     )
+    os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
 
 
     """
@@ -173,11 +167,24 @@ def deploy_django_project(args):
     ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
     sys.path.append(os.path.dirname(settings))
     import settings
+    if settings.STATIC_ROOT[-1] is not '/':
+        settings.STATIC_ROOT = settings.STATIC_ROOT = "/"
+
+    # Create the log directory
+    PROJECT_ROOT = "/".join( settings.STATIC_ROOT.split("/")[:-2] )
+    print "PROJECT_ROOT: ", PROJECT_ROOT
+    LOG_DIR = PROJECT_ROOT+"/logs"
+    os.makedirs(LOG_DIR)
+    print "LOG_DIR: ", LOG_DIR
+    raw_input()
     nginx_context.update({
         'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
         'DOMAINNAME':args.domainname,
         'DJANGO_STATIC':settings.STATIC_ROOT,
         'DJANGO_MEDIA':settings.MEDIA_ROOT,
+        'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
+        'ERROR_LOG':"%s/error.log"%(LOG_DIR),
+        
     })
 
     print "nginx_context: ", nginx_context

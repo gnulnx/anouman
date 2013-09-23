@@ -1,8 +1,6 @@
 upstream {{DOMAINNAME}} {
-  # fail_timeout=0 means we always retry an upstream even if it failed
-  # to return a good HTTP response (in case the Unicorn master nukes a
-  # single worker for timing out).
- 
+  # bind to the upstream unix socket and continue to retry even if it failed
+  # to return a good HTTP response
   server {{UNIXBIND}} fail_timeout=0;
 }
  
@@ -16,8 +14,8 @@ server {
     #access_log /webapps/hello_django/logs/nginx-access.log;
     #error_log /webapps/hello_django/logs/nginx-error.log;
 
-    #access_log  {{ACCESS_LOG}};
-    #error_log   {{ERROR_LOG}};
+    access_log  {{ACCESS_LOG}};
+    error_log   {{ERROR_LOG}};
  
     location /static/ {
         alias   {{DJANGO_STATIC}};
@@ -28,33 +26,19 @@ server {
     }
  
     location / {
-        # an HTTP header important enough to have its own Wikipedia entry:
-        #   http://en.wikipedia.org/wiki/X-Forwarded-For
+        # set the HTTP header
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
  
-        # enable this if and only if you use HTTPS, this helps Rack
-        # set the proper protocol for doing redirects:
-        # proxy_set_header X-Forwarded-Proto https;
- 
         # pass the Host: header from the client right along so redirects
-        # can be set properly within the Rack application
+        # can be set correctly in the Django application
         proxy_set_header Host $http_host;
  
         # we don't want nginx trying to do something clever with
         # redirects, we set the Host: header above already.
         proxy_redirect off;
  
-        # set "proxy_buffering off" *only* for Rainbows! when doing
-        # Comet/long-poll stuff.  It's also safe to set if you're
-        # using only serving fast clients with Unicorn + nginx.
-        # Otherwise you _want_ nginx to buffer responses to slow
-        # clients, really.
-        # proxy_buffering off;
- 
-        # Try to serve static files from nginx, no point in making an
-        # *application* server like Unicorn/Rainbows! serve static files.
+        # Let nginx server teh static files while gunicorn focuses on the python/db content
         if (!-f $request_filename) {
-            #proxy_pass http://hello_app_server;
             proxy_pass http://{{DOMAINNAME}};
             break;
         }

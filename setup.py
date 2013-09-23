@@ -75,7 +75,7 @@ for dirpath, dirnames, filenames in os.walk(anouman_dir):
 with open('README.rst') as file:
     long_description = file.read()
 
-version = "0.0.3.1"
+version = "0.0.4.0"
 
 setup(
     name='anouman',

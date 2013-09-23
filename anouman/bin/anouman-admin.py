@@ -11,11 +11,8 @@ descr="""
     anouman is a django 1.4+ deployment simplifier.
 
     You provide anouman a django project and anouman provides
-    you a fully deployable pip installable package.
+    you a fully deployable anouman package (aka tarball)
     
-    PLUS you also get the option of running it on a virtual machine 
-    first.
-
     NOTE:  anouman
     Currently we can deploy project based on django 1.4 and up.
 """
@@ -78,11 +75,6 @@ def get_args():
         dest='bind',
         default=False, #ex:  10.0.1.13:8001
     )
-    #parser.add_argument('--socket',
-    #    help='Set the unix socket we should bind to',
-    #    dest='socket',
-    #    default='unix:/var/run/your_project.sock',
-    #)
     
     parser.add_argument('--gunicorn',
         help='use gunicorn as the django server',
@@ -132,13 +124,11 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
-    # Client Side
-    # Package a current django project as an anouman tar ball
+    # Project Packaging
     if args.django_project:
         setup.package_django_project(args)
     
-    # Server Side
-    # deploy a anouman tarball
+    # Project Deploying
     if args.deploy:
         setup.deploy_django_project(args)
 
@@ -146,41 +136,5 @@ if __name__ == '__main__':
     # TODO do we still want to go this route???
     if args.project_name:
         setup.new_project( args )
-
-
-    # TODO Is this code path still used?
-    if args.setup:
-        print "YEP YOU ARE IN args.setup section"
-        sys.exit(0)
-        # Change to the users home diretory
-        os.chdir( expanduser("~") )
-
-
-        print "Running initial setup"
-        subprocess.call(["pip", "install", "virtualenv"])      
-        
-        print "Creating the master .anouman virtualenv"
-        subprocess.call(["virtualenv", ".anouman"])
-
-        # Source the activate command
-        print "source .anouman/bin/activate"
-        os.system("source .anouman/bin/activate")
-        #subprocess.call(["source", ".anouman/bin/activate"])
-     
-        print "pip install virtualenvwrapper"
-        subprocess.call(["pip", "install", "virtualenvwrapper"])
-
-        print "installing django for anouman"
-        subprocess.call(["pip", "install", "django"])
-
-        # Now lets convert our virtualenv to a wrapped virtualenv
-        print "mkvirtualenv .anouman"
-        subprocess.call(["mkvirtualenv", ".anouman"])
-
-        print "echo source .anouman/bin/virtualenvwrapper >> .bash_profil"        
-        os.system("source .anouman/bin/virtualenvwrapper")
-        
-        print "Also add it to the users .bash_profile"
-        subprocess.call(["echo", "source .anouman/bin/virtualenvwrapper >> .bash_profile"])
 
 

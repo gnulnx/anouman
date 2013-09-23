@@ -24,9 +24,10 @@ then
 
         echo "Installing django into anouman virtualenv"
         pip install django -q
-    
+
+        .virtualenvs/anouman/bin/pip install /vagrant/anouman-0.0.4.0.tar.gz --upgrade
         ## TODO  pip install anouman
-        pip install anouman  --upgrade -q
+        #pip install anouman  --upgrade -q
     
         echo "anouman basic setup now finished"
         
