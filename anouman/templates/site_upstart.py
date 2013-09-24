@@ -1,6 +1,11 @@
 import os
 from django.template import Template, Context
 
+context = {
+    'GUNICORN_START':'',    # The abspath to the gunicorn_start script
+    'DOMAINNAME':'',        # The domain name
+}
+
 gunicorn_upstart="""description     "Starting {{DOMAINNAME}}"
 
 start on startup
@@ -13,13 +18,10 @@ respawn
 """
 
 
-context = {
-    'GUNICORN_START':'',    # The abspath to the gunicorn_start script
-    'DOMAINNAME':'',        # The domain name
-}
 
 
-def build_init(context=context):
+def render(c={}):
+    context.update(c)
     t = Template( gunicorn_upstart )
     c = Context( context )
     return t.render(c)

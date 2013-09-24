@@ -3,15 +3,13 @@ from os.path import expanduser
 import getpass
 import subprocess
 
-# TODO Refactor this template
-from anouman.templates.nginx import (
-    nginx_upstart,
-    nginx_context,
-)
 
-from anouman.templates import gunicorn_start
-from anouman.templates.init_script import gunicorn_upstart
-from anouman.templates import commands
+from anouman.templates import (
+    gunicorn_start,
+    site_upstart,
+    commands,
+    nginx
+)
 
 from anouman.utils.find_files import (
     get_settings,
@@ -99,24 +97,17 @@ def deploy_django_project(args):
     NAME=os.path.basename(args.django_project)
     DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
 
-    print "gunicorn_start: ", gunicorn_start
-    print "gunicorn_start.__dict__: ", gunicorn_start.__dict__
-
     with open(GUNICORN_START, 'w') as f:
-        f.write( 
-            gunicorn_start.render(
-                {
-                    'NAME':args.domainname,
-                    'USER':getpass.getuser(),
-                    'GROUP':getpass.getuser(),
-                    'GUNICORN':"%s/gunicorn"%(BIN),
-                    'DJANGODIR':DJANGODIR,
-                    'DJANGO_SETTINGS_MODULE':SETTINGS,
-                    'DJANGO_WSGI_MODULE':WSGI,
-                    'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
-                }
-            ) 
-        )
+        f.write( gunicorn_start.render({
+            'NAME':args.domainname,
+            'USER':getpass.getuser(),
+            'GROUP':getpass.getuser(),
+            'GUNICORN':"%s/gunicorn"%(BIN),
+            'DJANGODIR':DJANGODIR,
+            'DJANGO_SETTINGS_MODULE':SETTINGS,
+            'DJANGO_WSGI_MODULE':WSGI,
+            'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
+        }))
 
     # Set Permissions on the GUNICORN file
     os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
@@ -126,12 +117,11 @@ def deploy_django_project(args):
         Now we create the gunicorn upstart scripts
     """
     NAME=args.domainname+".conf"
-    gunicorn_upstart.context.update({
-        'GUNICORN_START':GUNICORN_START,
-        'DOMAINNAME':args.domainname,
-    })
     with open(NAME, 'w') as f:
-        f.write(gunicorn_upstart.build_init())
+        f.write( site_upstart.render({
+            'GUNICORN_START':GUNICORN_START,
+            'DOMAINNAME':args.domainname,
+        }))
 
     print "We need to copy the website startup scripts to /etc/init/"
     print "This will require you to enter your sudo password now."
@@ -158,19 +148,17 @@ def deploy_django_project(args):
     LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
     os.makedirs(LOG_DIR)
 
-    nginx_context.update({
-        'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
-        'DOMAINNAME':args.domainname,
-        'DJANGO_STATIC':settings.STATIC_ROOT,
-        'DJANGO_MEDIA':settings.MEDIA_ROOT,
-        'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
-        'ERROR_LOG':"%s/error.log"%(LOG_DIR),
-        
-    })
-
+    ## Create the site's /etc/nginx/sites-enabled
     NGINX_CONF='nginx.%s.conf'%(args.domainname)
     with open(NGINX_CONF, 'w') as f:
-        f.write( nginx_upstart(nginx_context) )
+        f.write( nginx.render({
+            'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
+            'DOMAINNAME':args.domainname,
+            'DJANGO_STATIC':settings.STATIC_ROOT,
+            'DJANGO_MEDIA':settings.MEDIA_ROOT,
+            'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
+            'ERROR_LOG':"%s/error.log"%(LOG_DIR),
+        }))
 
     print "We need to copy the nginx.domainname.conf file to /etc/nginx/sites-available/"
     print "This will require sudo"

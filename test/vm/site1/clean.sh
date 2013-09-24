@@ -19,3 +19,7 @@ sudo rm -rf /home/anouman/.virtualenvs/
 # Remove the .bash_profile
 # Make sure this test never runs on the clients machine!
 rm -rf /home/anouman/.bash_profile
+
+
+# Remove the site upstart command
+sudo rm -rf /etc/init/site1.com.conf

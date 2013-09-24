@@ -1,4 +1,29 @@
-upstream {{DOMAINNAME}} {
+#!/usr/bin/env python
+import os
+from django.template import Template, Context
+from django.conf import settings
+
+## When you initially did this you were only using django templates
+## and this was not a full django project.  You can only call this
+## once so you put in a few files to make sure it was called...
+try: setting
+except: pass
+
+
+"""
+    Build the nginx upstart command that will run the site
+"""
+
+# The context variables which can be modified
+context = {
+    'UNIXBIND':'',
+    'DOMAINNAME':'',
+    'DJANGO_STATIC':'',
+    'DJANGO_MEDIA':'',
+}
+
+# The nginx template.
+nginx_site_conf="""upstream {{DOMAINNAME}} {
   # bind to the upstream unix socket and continue to retry even if it failed
   # to return a good HTTP response
   server {{UNIXBIND}} fail_timeout=0;
@@ -50,3 +75,11 @@ server {
         root {{DJANGO_STATIC}};
     }
 }
+"""
+
+def render(c={}):
+    context.update(c)
+    t = Template( nginx_site_conf )
+    c = Context( context )
+    return t.render(c)
+
