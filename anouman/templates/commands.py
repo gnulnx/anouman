@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 from django.template import Template, Context
+from django.conf import settings
+
+## When you initially did this you were only using django templates
+## and this was not a full django project.  You can only call this
+## once so you put in a few files to make sure it was called...
+try: settings.configure()
+except: pass
+
+context = {
+    'DOMAINNAME':'',
+}
 
 commands = """
 #This section defines commands specified by Anouman
@@ -32,12 +43,9 @@ function site {
         fi
 }"""
 
-context = {
-    'DOMAINNAME':'',
-}
 
 
-def get_commands(context=context):
+def render(context=context):
     t = Template( commands )
     c = Context( context )
     return t.render(c)

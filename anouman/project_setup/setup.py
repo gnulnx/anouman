@@ -11,7 +11,7 @@ from anouman.templates.nginx import (
 
 from anouman.templates import gunicorn_start
 from anouman.templates.init_script import gunicorn_upstart
-from anouman.templates.commands import commands
+from anouman.templates import commands
 
 from anouman.utils.find_files import (
     get_settings,
@@ -55,10 +55,12 @@ def deploy_django_project(args):
     ## Now add a few shell commands to the activate script that will be
     ## unique to each deployed website
     # TODO You can potentially use virtualenv hooks.
-    commands.context['DOMAINNAME'] = args.domainname
-    cmd_str = commands.get_commands(commands.context)
     with open(ACTIVATE, 'a') as f:   
-        f.write(cmd_str)
+        f.write(
+            commands.render(
+                {'DOMAINNAME':args.domainname}
+            )
+        )
 
 
     # Now we loop over the list of packages we stored during the packaging phase
