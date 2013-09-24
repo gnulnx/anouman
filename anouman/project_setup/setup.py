@@ -3,18 +3,13 @@ from os.path import expanduser
 import getpass
 import subprocess
 
-# TODO refactor this template
-from anouman.templates.gunicorn_start import (
-    gunicorn_start,
-    gunicorn_context,
-)
-
 # TODO Refactor this template
 from anouman.templates.nginx import (
     nginx_upstart,
     nginx_context,
 )
 
+from anouman.templates import gunicorn_start
 from anouman.templates.init_script import gunicorn_upstart
 from anouman.templates.commands import commands
 
@@ -102,24 +97,24 @@ def deploy_django_project(args):
     NAME=os.path.basename(args.django_project)
     DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
 
-    context = {
-        'NAME':args.domainname,
-        'USER':getpass.getuser(),
-        'GROUP':getpass.getuser(),
-        'GUNICORN':"%s/gunicorn"%(BIN),
-        'DJANGODIR':DJANGODIR,
-        'DJANGO_SETTINGS_MODULE':SETTINGS,
-        'DJANGO_WSGI_MODULE':WSGI,
-
-        # Default bind is unix:/var/run/domainname.com.sock
-        # Override with --bind=ip:port 
-        'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
-    }
-
-    gunicorn_context.update(context)
+    print "gunicorn_start: ", gunicorn_start
+    print "gunicorn_start.__dict__: ", gunicorn_start.__dict__
 
     with open(GUNICORN_START, 'w') as f:
-        f.write( gunicorn_start( gunicorn_context ) )
+        f.write( 
+            gunicorn_start.render(
+                {
+                    'NAME':args.domainname,
+                    'USER':getpass.getuser(),
+                    'GROUP':getpass.getuser(),
+                    'GUNICORN':"%s/gunicorn"%(BIN),
+                    'DJANGODIR':DJANGODIR,
+                    'DJANGO_SETTINGS_MODULE':SETTINGS,
+                    'DJANGO_WSGI_MODULE':WSGI,
+                    'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
+                }
+            ) 
+        )
 
     # Set Permissions on the GUNICORN file
     os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
@@ -134,11 +129,7 @@ def deploy_django_project(args):
         'DOMAINNAME':args.domainname,
     })
     with open(NAME, 'w') as f:
-        f.write(
-            gunicorn_upstart.build_init(
-                gunicorn_upstart.context
-            )
-        )
+        f.write(gunicorn_upstart.build_init())
 
     print "We need to copy the website startup scripts to /etc/init/"
     print "This will require you to enter your sudo password now."

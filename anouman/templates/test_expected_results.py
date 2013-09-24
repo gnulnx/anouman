@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-from django.template import Template, Context
 
-commands = """
+shell_commands_expected="""
 #This section defines commands specified by Anouman
 
 NGINX=/etc/init.d/nginx
-DOMAINNAME={{DOMAINNAME}}
+DOMAINNAME=example.com
 
 function site {
         if [ $1 == 'status' ];
@@ -31,16 +30,3 @@ function site {
                 sudo nginx -s reload
         fi
 }"""
-
-context = {
-    'DOMAINNAME':'',
-}
-
-
-def get_commands(context=context):
-    t = Template( commands )
-    c = Context( context )
-    return t.render(c)
-
-
-
