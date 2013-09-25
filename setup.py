@@ -1,11 +1,11 @@
-from version import VERSION
 import os
 import sys
-
 from distutils.core import setup
 from distutils.sysconfig import get_python_lib
 
 from setuptools import find_packages
+
+VERSION="0.0.4.0"
 
 # Warn if we are installing over top of an existing installation. This can
 # cause issues where files that were deleted from a more recent Dnginx are
