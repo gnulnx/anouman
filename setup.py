@@ -81,6 +81,8 @@ setup(
     name='anouman',
     version=VERSION,
     author='John Furr',
+    author_email='gnulnx@gmail.com',
+    url='https://github.com/gnulnx/anouman',
     description=('Rapidly deploy your django project behind gunicorn and nginx'),
     long_description=long_description,
     download_url='https://github.com/gnulnx/anouman/tree/0.0.3',
