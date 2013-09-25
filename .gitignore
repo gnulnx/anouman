@@ -9,3 +9,4 @@ scratch
 build/*
 buildenv/*
 buildenv/lib/python2.7/site-packages/easy-install.pth
+test/vm/site1/anouman-0.0.4.0.tar.gz

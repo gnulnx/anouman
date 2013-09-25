@@ -1,3 +1,4 @@
+from version import VERSION
 import os
 import sys
 
@@ -75,11 +76,10 @@ for dirpath, dirnames, filenames in os.walk(anouman_dir):
 with open('README.rst') as file:
     long_description = file.read()
 
-version = "0.0.4.0"
 
 setup(
     name='anouman',
-    version=version,
+    version=VERSION,
     author='John Furr',
     description=('Rapidly deploy your django project behind gunicorn and nginx'),
     long_description=long_description,

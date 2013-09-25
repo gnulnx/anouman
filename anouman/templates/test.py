@@ -5,7 +5,7 @@ from django.conf import settings
 settings.configure()
 
 #from anouman.templates.init_script import gunicorn_upstart
-from commands import commands
+from anouman.templates import commands
 
 class TestSequenceFunctions(unittest.TestCase):
 
@@ -18,8 +18,7 @@ class TestSequenceFunctions(unittest.TestCase):
             'DOMAINNAME':'example.com',
         }
         
-        print shell_commands_expected
-        out = commands.get_commands(context) 
+        out = commands.render(context) 
         self.assertTrue(out == shell_commands_expected)
 
     def test_choice(self):
@@ -33,4 +32,6 @@ class TestSequenceFunctions(unittest.TestCase):
             self.assertTrue(element in self.seq)
 
 if __name__ == '__main__':
-    unittest.main()
+    #unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestSequenceFunctions)
+    unittest.TextTestRunner(verbosity=2).run(suite)
