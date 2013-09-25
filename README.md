@@ -185,4 +185,4 @@ These site management commands are specific to the site curently being worked on
 
     your.site.ip.address   www.example.com   example.com
 
-**Step 10:** Now point your browser to example.com and you should see you django website.  Enjoy. 
+**Step 10:** Now point your browser to example.com and you should see your django website.  Enjoy. 
