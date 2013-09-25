@@ -55,3 +55,8 @@ class TestBuild(unittest.TestCase):
         self.assertTrue(anouman)
 
 
+    def test_5_build_package(self):
+        subprocess.call(['anouman', '--django-project', '/test/site1.tar.gz
+
+
+
