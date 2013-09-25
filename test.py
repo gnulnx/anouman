@@ -56,7 +56,51 @@ class TestBuild(unittest.TestCase):
 
 
     def test_5_build_package(self):
-        subprocess.call(['anouman', '--django-project', '/test/site1.tar.gz
+        # Pre test cleanup
+        subprocess.call(['rm', '-rf', 'tmp/*'])
+        subprocess.call(['rm', '-rf', 'site1.com.tar.gz'])
+
+
+        # build anouman package        
+        subprocess.call(['anouman', '--django-project', 'test/django/site1', '--domainname', 'site1.com'])
+
+        # Mv package to tmp directory
+        subprocess.call(['mv', 'site1.com.tar.gz', 'tmp/'])
+        os.chdir('tmp/')
+
+    def test_6_check_package_contents(self):        
+        # unpack the package and check basic directory structure.
+        subprocess.call(['tar', 'xvfz', 'site1.com.tar.gz']) 
+        dir_contents = os.listdir("site1.com")
+        self.assertEqual(
+            ['pip_packages.txt', 'src'], 
+            dir_contents
+        )
+
+        self.assertTrue(
+            os.path.isfile("site1.com/src/manage.py")
+        )
+
+        self.assertTrue(
+            os.path.isfile("site1.com/src/site1/settings.py")
+        )
+        
+        self.assertTrue(
+            os.path.isfile("site1.com/src/site1/wsgi.py")
+        )
+
+    """ This test needs to be server side """
+    #def test_7_check_for_nginx_conf(self):
+    #    """
+    #        Will currently fail.  We need to save our nginx configure file here first
+    #        And then link
+    #    """
+    #    # Check for site1.com/etc/nginx/sites-available/site1.com.conf
+    #    self.assertTrue(
+    #        os.path.isfile('site1.com/etc/nginx/sites-available/site1.com.conf')
+    #    )
+        
+
 
 
 

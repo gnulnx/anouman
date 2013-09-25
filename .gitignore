@@ -2,6 +2,7 @@
 *.pyo
 *.swp
 dist
+tmp/
 MANIFEST
 anouman.egg-info*
 scratch/*
