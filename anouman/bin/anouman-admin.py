@@ -120,6 +120,7 @@ def get_args():
 
 
 if __name__ == '__main__':
+    print "anouman"
     args = get_args()
 
     # Project Packaging
@@ -136,3 +137,4 @@ if __name__ == '__main__':
         setup.new_project( args )
 
 
+    

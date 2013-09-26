@@ -105,8 +105,22 @@ class TestBuild(unittest.TestCase):
 
 
 class TestVagrant(unittest.TestCase):
+    
+    def setUp(self):
+        """
+            There were a lot of directory changes going on.
+            It was easier to alway's return to a common root directory
+        """
+        # return to the rool level directory
+        os.chdir(os.path.dirname(__file__))
 
-    def connect_to_s1(self):
+
+    def connect_to_s1(self, transport=False):
+        """
+            return a connection to server "s1"
+            This is a vagrant box. that expects to have already
+            had provisioning from bootstrap.sh done on it.
+        """
         client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.connect(
@@ -118,7 +132,32 @@ class TestVagrant(unittest.TestCase):
        
         stdin, stdout, stderr = client.exec_command('hostname')
         return client    
-           
+          
+    def scp(self, remotepath, localpath):
+        """
+            scp a file to remote server s1.  
+        """
+        #TODO: Remove the hard coded scp call.  In fact why not move this
+        # out of the test suite and make it a general purpose call.
+        transport = paramiko.Transport(('192.168.100.100', 22))
+        transport.connect(
+            username='anouman', 
+            password='anouman'
+        )
+
+        sftp = paramiko.SFTPClient.from_transport(transport)
+        try:
+            sftp.put(remotepath, localpath)
+        except Exception as e:
+            print os.listdir("./")
+            raise Exception("YOU FAIL: ", e)
+        sftp.close()
+        transport.close()
+
+    def exec_s1(self, cmd):
+        ssh = self.connect_to_s1()
+        return self.exec_command(ssh, cmd) 
+
     def exec_command(self, ssh, cmd):
         stdin, stdout, stderr = ssh.exec_command(cmd) 
 
@@ -131,6 +170,12 @@ class TestVagrant(unittest.TestCase):
     def test_1_bring_vagrant_up(self):
         base_dir = os.path.dirname(__file__)
         os.chdir(os.path.join(base_dir, "test/vm/site1"))
+
+        """
+            Frist we try to connect to see if the vm is already up.
+            If that fails we then call vagrant up and try to connect
+            again after that finishes. 
+        """
         try:
             ssh = self.connect_to_s1()
         except Exception as e:
@@ -142,9 +187,39 @@ class TestVagrant(unittest.TestCase):
         stdout = self.exec_command(ssh, 'hostname')
         if 'precise64' not in stdout:
             self.assertFalse("Incorrect hostname....so no this test fails")
-            
+           
+    def test_2_clean_server(self):
+        out = self.exec_s1("/usr/bin/yes | sh /vagrant/clean.sh")  
+
+        # Confirm that the home directory has been cleaned out
+        out = self.exec_s1("cd /home/anouman; ls")
+        self.assertEqual(out.strip(), '')
         
+        # Make sure anouman has been uninstalled
+        out = self.exec_s1("anouman") 
+        self.assertEqual(out, '') 
+
+        # TODO There are probably several other checks could do here
+
+    def test_3_scp_package_to_s1(self):
+        # copy anouman to server
+        self.scp(
+            "dist/anouman-%(version)s.tar.gz" % {'version':VERSION}, 
+            "/home/anouman/anouman-0.0.4.0.tar.gz"
+        )
+
+        out = self.exec_s1("cd /home/anouman; ls")
+        self.assertEqual(
+            "anouman-%(version)s.tar.gz" % {'version':VERSION},
+            out.strip()
+        )
+
+       
+    def test_4_install_with_pip(self):  
+        out = self.exec_s1("sudo pip install /home/anouman/anouman-%(version)s.tar.gz --upgrade" % {'version':VERSION})
+   
+        # Check that anouman is installed
+        out = self.exec_s1("anouman") 
+        self.assertEqual(out.strip(), "anouman") 
 
 
-
-        

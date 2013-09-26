@@ -11,9 +11,10 @@ DOMAINNAME=site1.com
 sudo rm -rf /etc/nginx/sites-enabled/nginx.$DOMAINNAME.conf  /etc/nginx/sites-available/nginx.$DOMAINNAME.conf
 
 # Remove anouman
-sudo pip uninstall anouman
+/usr/bin/yes | sudo pip uninstall anouman
 
 # Remove all traces of virtualenv
+sudo rm -rf /home/anouman/*
 sudo rm -rf /home/anouman/.virtualenvs/
 
 # Remove the .bash_profile

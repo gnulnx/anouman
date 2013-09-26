@@ -35,4 +35,6 @@ if [ $1 ];
 then
     echo "calling anouman-admin.py $@"
     anouman-admin.py $@
+else
+    echo "anouman"
 fi
