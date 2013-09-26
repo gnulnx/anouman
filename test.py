@@ -1,7 +1,7 @@
 import os
 import unittest
 import subprocess
-
+import paramiko
 for line in open("setup.py"):
     if "VERSION" in line:
         try:
@@ -25,17 +25,7 @@ class TestBuild(unittest.TestCase):
             )
         )
     
-
-    def test_2_sdist(self):
-        subprocess.call(['python', 'setup.py', '--quiet', 'sdist'])
-        self.assertTrue(
-            os.path.isfile(
-                'dist/anouman-%(version)s.tar.gz' % {'version':VERSION}
-            )
-        )
-
-
-    def test_3_uninstall_anouman(self):
+    def test_2_uninstall_anouman(self):
         subprocess.call(['pip', '-q', 'uninstall', 'anouman'])
         try:
             anouman = subprocess.check_output(['which', 'anouman'])
@@ -43,6 +33,14 @@ class TestBuild(unittest.TestCase):
             anouman = False
 
         self.assertFalse(anouman)
+
+    def test_3_sdist(self):
+        subprocess.call(['python', 'setup.py', '--quiet', 'sdist'])
+        self.assertTrue(
+            os.path.isfile(
+                'dist/anouman-%(version)s.tar.gz' % {'version':VERSION}
+            )
+        )
 
         
     def test_4_install_anouman(self):
@@ -55,14 +53,17 @@ class TestBuild(unittest.TestCase):
         self.assertTrue(anouman)
 
 
-    def test_5_build_package(self):
+    def test_5_create_anouman_package(self):
         # Pre test cleanup
         subprocess.call(['rm', '-rf', 'tmp/*'])
         subprocess.call(['rm', '-rf', 'site1.com.tar.gz'])
 
 
         # build anouman package        
-        subprocess.call(['anouman', '--django-project', 'test/django/site1', '--domainname', 'site1.com'])
+        results = subprocess.check_output(['anouman', '--django-project', 'test/django/site1', '--domainname', 'site1.com'])
+        print "###########################################################################################"
+        print results
+        print "############################################################################################"
 
         # Mv package to tmp directory
         subprocess.call(['mv', 'site1.com.tar.gz', 'tmp/'])
@@ -103,4 +104,47 @@ class TestBuild(unittest.TestCase):
 
 
 
+class TestVagrant(unittest.TestCase):
 
+    def connect_to_s1(self):
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.connect(
+            hostname='192.168.100.100',
+            username='anouman',
+            password='anouman',
+            timeout=5
+        )
+       
+        stdin, stdout, stderr = client.exec_command('hostname')
+        return client    
+           
+    def exec_command(self, ssh, cmd):
+        stdin, stdout, stderr = ssh.exec_command(cmd) 
+
+        out=''
+        for line in stdout:
+            out = out + line
+            
+        return out
+
+    def test_1_bring_vagrant_up(self):
+        base_dir = os.path.dirname(__file__)
+        os.chdir(os.path.join(base_dir, "test/vm/site1"))
+        try:
+            ssh = self.connect_to_s1()
+        except Exception as e:
+            print "\nCONNECTION FAILED.  \nTrying to bring vagrant up...."
+            subprocess.call(['vagrant', 'up'])
+            print "Now retrying ssh connect"
+            ssh = self.connect_to_s1()
+
+        stdout = self.exec_command(ssh, 'hostname')
+        if 'precise64' not in stdout:
+            self.assertFalse("Incorrect hostname....so no this test fails")
+            
+        
+
+
+
+        

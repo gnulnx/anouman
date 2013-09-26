@@ -19,7 +19,7 @@ from anouman.utils.find_files import (
 
 def deploy_django_project(args):
     """
-        The Very First thing we want to do is unpack the project
+        The very first thing we want to do is unpack the project
     """
     # subproces, tar returns zero on success...
     if subprocess.call(["tar", "xvfz", args.deploy]):
@@ -43,6 +43,7 @@ def deploy_django_project(args):
     WSGI = get_wsgi(args)       # get module path to wsgi.py
     MANAGE = get_manage(args) #get abspath of manage.py
 
+    # A few useful constant are set.
     BIN=os.path.abspath("%s/bin"%(VIRTUALENV))
     PIP="%s/pip"%(BIN)
     PYTHON="%s/python"%(BIN)
@@ -128,14 +129,6 @@ def deploy_django_project(args):
     os.system("sudo mv %s /etc/init/%s"%(NAME, NAME) )
 
 
-    """
-        nginx script for the site.
-        place in:   /etc/nginx/sites-available
-        link to:    /etc/nginx/sites-enabled 
-
-        templ_file: anouman/templates/nginx/ngix_site.template
-         
-    """
     ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
     sys.path.append(os.path.dirname(settings))
     import settings
@@ -148,7 +141,16 @@ def deploy_django_project(args):
     LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
     os.makedirs(LOG_DIR)
 
-    ## Create the site's /etc/nginx/sites-enabled
+    """
+        nginx script for the site.
+        place in:   domainname/etc/nginx/sites-available
+        and in:   /etc/nginx/sites-available
+        link to:    /etc/nginx/sites-enabled 
+
+        Anouman should eventually be able to bring your sites on       
+        and off line simple by removing the symlink
+         
+    """
     NGINX_CONF='nginx.%s.conf'%(args.domainname)
     with open(NGINX_CONF, 'w') as f:
         f.write( nginx.render({
@@ -160,17 +162,33 @@ def deploy_django_project(args):
             'ERROR_LOG':"%s/error.log"%(LOG_DIR),
         }))
 
-    print "We need to copy the nginx.domainname.conf file to /etc/nginx/sites-available/"
-    print "This will require sudo"
+    # First we make sure we have an /etc/ directory in our project directory.
+    # We will use this directory to store ubuntu settings files that we generate 
+    # vi anouman
+    os.makedirs("%s/etc/nginx/sites-available/"%(args.domainname) )
+    os.system("sudo cp %s %s/etc/nginx/sites-available/%s" % (NGINX_CONF, args.domainname, NGINX_CONF) )
+
+    # TODO??    Do you really need to copy to /etc/nginx/sites-available/?
+    #           Can't you just symlink from domain/etc/nginx/sites-available/
     os.system("sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF) )
     os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
 
-    print "\n\n----------------------------------------------"
-    print "Please add the following line(s) to your .bash_profile"
-    print "source /usr/local/bin/virtualenvwrapper.sh;"
-    print "workon %s"%(args.domainname)
-    print "\nThen call source on .bash_profile"
-    print "\n$source ~/.bash_profile"
+    """
+        Really?  This was the first idea you had for a setup complete message?  lol
+    """
+    print "#########################################################################"
+    print "#                                                                       #"    
+    print "#                        SETUP COMPLETE                                 #"    
+    print "#                                                                       #"    
+    print "#         Please add the following line(s) to your .bash_profile        #"
+    print "#                                                                       #"    
+    print "#         source /usr/local/bin/virtualenvwrapper.sh;                   #"
+    print "#         workon %s                                                     #"%(args.domainname)
+    print "#                                                                       #"    
+    print "#         Then call source on .bash_profile                             #"
+    print "#         $source ~/.bash_profile                                       #"
+    print "#                                                                       #"    
+    print "#########################################################################"
 
 def package_django_project(args):
     # settings is the full path

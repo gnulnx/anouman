@@ -2,5 +2,5 @@
 
 workon anouman
 
-#/usr/bin/yes | python -m unittest discover -v
-/usr/bin/yes | python -m unittest discover -v > /dev/null
+/usr/bin/yes | python -m unittest discover -v --failfast
+#/usr/bin/yes | python -m unittest discover -v > /dev/null
