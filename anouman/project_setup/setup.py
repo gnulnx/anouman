@@ -131,13 +131,23 @@ def deploy_django_project(args):
 
     ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
     sys.path.append(os.path.dirname(settings))
-    import settings
-    if settings.STATIC_ROOT[-1] is not '/':
-        settings.STATIC_ROOT = settings.STATIC_ROOT = "/"
+    from settings import STATIC_ROOT, MEDIA_ROOT
+    print "STATIC_ROOT: ", STATIC_ROOT
+    if MEDIA_ROOT:
+        if MEDIA_ROOT[-1] is not '/':
+            MEDIA_ROOT = MEDIA_ROOT + "/"
+    else:
+        MEDIA_ROOT = "/"
+
+    if STATIC_ROOT:
+        if STATIC_ROOT[-1] is not '/': #here
+            STATIC_ROOT = STATIC_ROOT + "/"
+    else:
+        STATIC_ROOT = "/"
 
     # Create the log directory, defaults to domain/logs
     # TODO add --logs option to allow user to specify log directory
-    PROJECT_ROOT = "/".join( settings.STATIC_ROOT.split("/")[:-2] )
+    PROJECT_ROOT = "/".join( STATIC_ROOT.split("/")[:-2] )
     LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
     os.makedirs(LOG_DIR)
 
@@ -156,8 +166,8 @@ def deploy_django_project(args):
         f.write( nginx.render({
             'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
             'DOMAINNAME':args.domainname,
-            'DJANGO_STATIC':settings.STATIC_ROOT,
-            'DJANGO_MEDIA':settings.MEDIA_ROOT,
+            'DJANGO_STATIC':STATIC_ROOT,
+            'DJANGO_MEDIA':MEDIA_ROOT,
             'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
             'ERROR_LOG':"%s/error.log"%(LOG_DIR),
         }))

@@ -1,5 +1,6 @@
 import os
 import unittest
+import time
 import subprocess
 import paramiko
 for line in open("setup.py"):
@@ -14,7 +15,17 @@ try: VERSION
 except Exception as e:
     raise Exception("VERSION NUMBER NOT FOUND")
 
+VM1="10.0.1.21"
+
 class TestBuild(unittest.TestCase):
+
+    def setUp(self):
+        """
+            There were a lot of directory changes going on.
+            It was easier to alway's return to a common root directory
+        """
+        # return to the rool level directory
+        os.chdir(os.path.dirname(__file__))
 
     def test_1_remove_dist(self):
         """Make sure the build directory is gone"""
@@ -58,18 +69,22 @@ class TestBuild(unittest.TestCase):
         subprocess.call(['rm', '-rf', 'tmp/*'])
         subprocess.call(['rm', '-rf', 'site1.com.tar.gz'])
 
-
+        #create empty virtualenv
+        subprocess.call(['virtualenv', 'site1'])
+        os.system("source site1/bin/activate")
+        
         # build anouman package        
         results = subprocess.check_output(['anouman', '--django-project', 'test/django/site1', '--domainname', 'site1.com'])
-        print "###########################################################################################"
-        print results
-        print "############################################################################################"
 
         # Mv package to tmp directory
+        #os.mkdir('tmp')
         subprocess.call(['mv', 'site1.com.tar.gz', 'tmp/'])
-        os.chdir('tmp/')
+        #os.rmdir("site1")
+        self.assertTrue(True)
+        # clean up and remove this virtualenv
 
     def test_6_check_package_contents(self):        
+        os.chdir('tmp/')
         # unpack the package and check basic directory structure.
         subprocess.call(['tar', 'xvfz', 'site1.com.tar.gz']) 
         dir_contents = os.listdir("site1.com")
@@ -124,7 +139,7 @@ class TestVagrant(unittest.TestCase):
         client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.connect(
-            hostname='192.168.100.100',
+            hostname=VM1,
             username='anouman',
             password='anouman',
             timeout=5
@@ -139,7 +154,7 @@ class TestVagrant(unittest.TestCase):
         """
         #TODO: Remove the hard coded scp call.  In fact why not move this
         # out of the test suite and make it a general purpose call.
-        transport = paramiko.Transport(('192.168.100.100', 22))
+        transport = paramiko.Transport((VM1, 22))
         transport.connect(
             username='anouman', 
             password='anouman'
@@ -201,7 +216,7 @@ class TestVagrant(unittest.TestCase):
 
         # TODO There are probably several other checks could do here
 
-    def test_3_scp_package_to_s1(self):
+    def test_3_scp_anouman_to_s1(self):
         # copy anouman to server
         self.scp(
             "dist/anouman-%(version)s.tar.gz" % {'version':VERSION}, 
@@ -215,11 +230,28 @@ class TestVagrant(unittest.TestCase):
         )
 
        
-    def test_4_install_with_pip(self):  
+    def test_4_install_anouman_with_pip(self):  
         out = self.exec_s1("sudo pip install /home/anouman/anouman-%(version)s.tar.gz --upgrade" % {'version':VERSION})
-   
+
         # Check that anouman is installed
         out = self.exec_s1("anouman") 
         self.assertEqual(out.strip(), "anouman") 
 
+    def test_5_scp_package_to_s1(self):
 
+        self.scp(
+            "tmp/site1.com.tar.gz",
+            "/home/anouman/site1.com.tar.gz"
+        )
+
+        out = self.exec_s1("cd /home/anouman; ls")
+        self.assertEqual(
+            "anouman-%(version)s.tar.gz\nsite1.com.tar.gz" % {'version':VERSION},
+            out.strip()
+        )
+
+    def test_6_install_site1(self):
+        print "cd /home/anouman; /usr/bin/yes | anouman --deploy site1.com.tar.gz"
+        out = self.exec_s1("cd /home/anouman; /usr/bin/yes | anouman --deploy site1.com.tar.gz")
+    
+        print "out: ", out
