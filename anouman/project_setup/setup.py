@@ -8,7 +8,10 @@ from anouman.templates import (
     gunicorn_start,
     site_upstart,
     commands,
-    nginx
+    nginx,
+    vagrant,
+    vagrant_bootstrap,
+    clean
 )
 
 from anouman.utils.find_files import (
@@ -16,6 +19,31 @@ from anouman.utils.find_files import (
     get_wsgi,
     get_manage
 )
+
+def build_vm(args):
+    if not args.vm:
+        raise Exception("build_vm must be callsed with args.mv=name")
+
+    os.mkdir(args.vm)
+    os.chdir(args.vm)
+    # Write the Vagrantfile
+    vagrant.save("Vagrantfile", context={
+            'NAME':args.vm,
+            'PUBLIC':True
+    })
+
+    # Write teh bootstrap file
+    vagrant_bootstrap.save(path="./bootstrap.sh", context={
+        'NGINX':True,
+        'MYSQL':True,
+    })
+
+    # Write the clean file
+    clean.save(path="./clean.sh", context={
+        'DOMAINNAME':'site3.com'
+    })
+    
+    subprocess.call(['vagrant', 'up'])
 
 def deploy_django_project(args):
     """

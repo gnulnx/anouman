@@ -204,6 +204,7 @@ class TestVagrant(unittest.TestCase):
             'DOMAINNAME':'site3.com'
         })
 
+        print "YOU NEED TO ACTUALLY CHECK SOMETHIGN FOR THIS TO BE  ATEST"
 
     def test_2_bring_vagrant_up(self):
         base_dir = os.path.dirname(__file__)
