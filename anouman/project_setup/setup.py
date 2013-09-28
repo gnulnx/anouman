@@ -62,32 +62,6 @@ def deploy_django_project(args):
         )
 
 
-    # Now we loop over the list of packages we stored during the packaging phase
-    # and try to install them with pip
-    pkg_success = []
-    pgk_fails = []
-    with open("%s/pip_packages.txt"%(args.domainname)) as f:
-        PACKAGES = f.readlines()
-        PACKAGES.append("gunicorn")
-        for package in PACKAGES:
-            try:
-                subprocess.call([PIP, "install", package])
-                pkg_success.append(package)
-            except:
-                pgk_fails.append(package)
-    
-    subprocess.call([PIP, "install", "-r", "%s/pip_packages.txt"%(args.domainname)])
-    print "Package Installation Results"
-    print "SUCCESS: %s" %(len(pkg_success))
-    print "FAIL:    %s" %(len(pgk_fails))
-    for f in pgk_fails:
-        print "\t*\t%s"%(f)
-
-
-    # Now we run the collectstatic command
-    subprocess.call([PYTHON, MANAGE, "collectstatic"])
-
-
     """
         Now we build up a context to apply to gunicorn_start.template.
         default context located: anouman/templates/gunicorn_start/__init__.py
@@ -98,17 +72,16 @@ def deploy_django_project(args):
     NAME=os.path.basename(args.django_project)
     DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
 
-    with open(GUNICORN_START, 'w') as f:
-        f.write( gunicorn_start.render({
-            'NAME':args.domainname,
-            'USER':getpass.getuser(),
-            'GROUP':getpass.getuser(),
-            'GUNICORN':"%s/gunicorn"%(BIN),
-            'DJANGODIR':DJANGODIR,
-            'DJANGO_SETTINGS_MODULE':SETTINGS,
-            'DJANGO_WSGI_MODULE':WSGI,
-            'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
-        }))
+    gunicorn_start.save(GUNICORN_START, context={
+        'NAME':args.domainname,
+        'USER':getpass.getuser(),
+        'GROUP':getpass.getuser(),
+        'GUNICORN':"%s/gunicorn"%(BIN),
+        'DJANGODIR':DJANGODIR,
+        'DJANGO_SETTINGS_MODULE':SETTINGS,
+        'DJANGO_WSGI_MODULE':WSGI,
+        'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
+    })
 
     # Set Permissions on the GUNICORN file
     os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
@@ -118,11 +91,10 @@ def deploy_django_project(args):
         Now we create the gunicorn upstart scripts
     """
     NAME=args.domainname+".conf"
-    with open(NAME, 'w') as f:
-        f.write( site_upstart.render({
-            'GUNICORN_START':GUNICORN_START,
-            'DOMAINNAME':args.domainname,
-        }))
+    site_upstart.save(NAME, context={
+        'GUNICORN_START':GUNICORN_START,
+        'DOMAINNAME':args.domainname,
+    })
 
     print "We need to copy the website startup scripts to /etc/init/"
     print "This will require you to enter your sudo password now."
@@ -162,15 +134,14 @@ def deploy_django_project(args):
          
     """
     NGINX_CONF='nginx.%s.conf'%(args.domainname)
-    with open(NGINX_CONF, 'w') as f:
-        f.write( nginx.render({
-            'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
-            'DOMAINNAME':args.domainname,
-            'DJANGO_STATIC':STATIC_ROOT,
-            'DJANGO_MEDIA':MEDIA_ROOT,
-            'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
-            'ERROR_LOG':"%s/error.log"%(LOG_DIR),
-        }))
+    nginx.save(NGINX_CONF, context={
+        'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
+        'DOMAINNAME':args.domainname,
+        'DJANGO_STATIC':STATIC_ROOT,
+        'DJANGO_MEDIA':MEDIA_ROOT,
+        'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
+        'ERROR_LOG':"%s/error.log"%(LOG_DIR),
+    })
 
     # First we make sure we have an /etc/ directory in our project directory.
     # We will use this directory to store ubuntu settings files that we generate 
@@ -182,6 +153,34 @@ def deploy_django_project(args):
     #           Can't you just symlink from domain/etc/nginx/sites-available/
     os.system("sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF) )
     os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
+
+
+    """
+        This section installs the users python packages into their site virtualenv
+    """
+    pkg_success = []
+    pgk_fails = []
+    with open("%s/pip_packages.txt"%(args.domainname)) as f:
+        PACKAGES = f.readlines()
+        PACKAGES.append("gunicorn")
+        for package in PACKAGES:
+            try:
+                subprocess.call([PIP, "install", package])
+                pkg_success.append(package)
+            except:
+                pgk_fails.append(package)
+    
+    subprocess.call([PIP, "install", "-r", "%s/pip_packages.txt"%(args.domainname)])
+    print "Package Installation Results"
+    print "SUCCESS: %s" %(len(pkg_success))
+    print "FAIL:    %s" %(len(pgk_fails))
+    for f in pgk_fails:
+        print "\t*\t%s"%(f)
+
+    # Now we run the collectstatic command
+    subprocess.call([PYTHON, MANAGE, "collectstatic"])
+
+
 
     """
         Really?  This was the first idea you had for a setup complete message?  lol

@@ -83,3 +83,8 @@ def render(c={}):
     c = Context( context )
     return t.render(c)
 
+def save(path="./site.conf", **kwargs):
+    c = kwargs.get('context', context)
+    with open(path, 'w') as f:
+        f.write(render(c) )
+    

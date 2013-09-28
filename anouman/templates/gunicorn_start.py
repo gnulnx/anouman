@@ -78,6 +78,10 @@ def render(c={}):
     c = Context( context )
     return t.render( c )
 
+def save(path="./gunicorn_start", **kwargs):
+    c = kwargs.get('context', context)
+    with open(path, 'w') as f:
+        f.write(render(c))
 
 if __name__ == '__main__':
     pass

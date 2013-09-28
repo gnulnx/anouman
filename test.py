@@ -3,6 +3,13 @@ import unittest
 import time
 import subprocess
 import paramiko
+import shutil
+from anouman.templates import (
+    vagrant,
+    vagrant_bootstrap,
+    clean
+)
+
 for line in open("setup.py"):
     if "VERSION" in line:
         try:
@@ -77,9 +84,7 @@ class TestBuild(unittest.TestCase):
         results = subprocess.check_output(['anouman', '--django-project', 'test/django/site1', '--domainname', 'site1.com'])
 
         # Mv package to tmp directory
-        #os.mkdir('tmp')
         subprocess.call(['mv', 'site1.com.tar.gz', 'tmp/'])
-        #os.rmdir("site1")
         self.assertTrue(True)
         # clean up and remove this virtualenv
 
@@ -105,18 +110,6 @@ class TestBuild(unittest.TestCase):
             os.path.isfile("site1.com/src/site1/wsgi.py")
         )
 
-    """ This test needs to be server side """
-    #def test_7_check_for_nginx_conf(self):
-    #    """
-    #        Will currently fail.  We need to save our nginx configure file here first
-    #        And then link
-    #    """
-    #    # Check for site1.com/etc/nginx/sites-available/site1.com.conf
-    #    self.assertTrue(
-    #        os.path.isfile('site1.com/etc/nginx/sites-available/site1.com.conf')
-    #    )
-        
-
 
 
 class TestVagrant(unittest.TestCase):
@@ -127,7 +120,10 @@ class TestVagrant(unittest.TestCase):
             It was easier to alway's return to a common root directory
         """
         # return to the rool level directory
-        os.chdir(os.path.dirname(__file__))
+        try:
+            os.chdir(os.path.dirname(__file__))
+        except:
+            os.chdir("/Users/jfurr/anouman/")
 
 
     def connect_to_s1(self, transport=False):
@@ -181,8 +177,35 @@ class TestVagrant(unittest.TestCase):
             out = out + line
             
         return out
+    
+    def test_1_create_new_vagrant_box(self):
+        print "test_1_create_new_vagrant_box"
+        try:
+            shutil.rmtree("test/vm/site3")
+            print "REMOVED"
+        except OSError as e:
+            print "EXCEPTION: ", e
+            pass
 
-    def test_1_bring_vagrant_up(self):
+        os.mkdir("test/vm/site3")
+        os.chdir("test/vm/site3")
+        
+        vagrant.save(path="./Vagrantfile", context={
+            'NAME':'site3',
+            'PUBLIC':True
+        })
+        
+        vagrant_bootstrap.save(path="./bootstrap.sh", context={
+            'NGINX':True,
+            'MYSQL':True,
+        })
+
+        clean.save(path="./clean.sh", context={
+            'DOMAINNAME':'site3.com'
+        })
+
+
+    def test_2_bring_vagrant_up(self):
         base_dir = os.path.dirname(__file__)
         os.chdir(os.path.join(base_dir, "test/vm/site1"))
 
@@ -203,7 +226,7 @@ class TestVagrant(unittest.TestCase):
         if 'precise64' not in stdout:
             self.assertFalse("Incorrect hostname....so no this test fails")
            
-    def test_2_clean_server(self):
+    def test_3_clean_server(self):
         out = self.exec_s1("/usr/bin/yes | sh /vagrant/clean.sh")  
 
         # Confirm that the home directory has been cleaned out
@@ -216,7 +239,7 @@ class TestVagrant(unittest.TestCase):
 
         # TODO There are probably several other checks could do here
 
-    def test_3_scp_anouman_to_s1(self):
+    def test_4_scp_anouman_to_s1(self):
         # copy anouman to server
         self.scp(
             "dist/anouman-%(version)s.tar.gz" % {'version':VERSION}, 
@@ -230,14 +253,14 @@ class TestVagrant(unittest.TestCase):
         )
 
        
-    def test_4_install_anouman_with_pip(self):  
+    def test_5_install_anouman_with_pip(self):  
         out = self.exec_s1("sudo pip install /home/anouman/anouman-%(version)s.tar.gz --upgrade" % {'version':VERSION})
 
         # Check that anouman is installed
         out = self.exec_s1("anouman") 
         self.assertEqual(out.strip(), "anouman") 
 
-    def test_5_scp_package_to_s1(self):
+    def test_6_scp_package_to_s1(self):
 
         self.scp(
             "tmp/site1.com.tar.gz",
@@ -250,7 +273,7 @@ class TestVagrant(unittest.TestCase):
             out.strip()
         )
 
-    def test_6_install_site1(self):
+    def test_7_install_site1(self):
         print "cd /home/anouman; /usr/bin/yes | anouman --deploy site1.com.tar.gz"
         out = self.exec_s1("cd /home/anouman; /usr/bin/yes | anouman --deploy site1.com.tar.gz")
     

@@ -25,3 +25,8 @@ def render(c={}):
     t = Template( gunicorn_upstart )
     c = Context( context )
     return t.render(c)
+
+def save(path="", **kwargs):
+    c = kwargs.get('context', context)
+    with open(path, 'w') as f:
+        f.write(render(c) )

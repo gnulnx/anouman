@@ -11,11 +11,13 @@ except: pass
 
 """
     Render the Vagrantfile used to start up vagrant
+    It default to a public network environemnt.
+    To set up a private network simple pass
+    PRIVATE:'192.168.100.100' to the context
 """
 
 context = {
     'NAME':'site1',
-    'PUBLIC':True,
     'PRIVATE':False, #To use private network set to ip:  192.168.100.100
 }
 
@@ -35,19 +37,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Run bootstrap.sh provisioning script 
   config.vm.provision :shell, :path => "bootstrap.sh" 
-
   {% if PRIVATE %}
   # Create a private network, which allows host-only access to the machine 
   # using a specific IP. 
   # config.vm.network :private_network, ip: "{{PRIVATE}}"  
-  {% endif %}
-
-  {% if PUBLIC %}
+  {% else %}
   # Create a public network, which will make the machine appear as another 
   #physical device on your network. 
   config.vm.network :public_network 
   {% endif %}
-
   #config.vm.provider :virtualbox do |vb| 
   # # Don't boot with headless mode 
   #  vb.gui = true 
@@ -66,6 +64,11 @@ def render(c={}):
     t = Template( templ )
     c = Context( context )
     return t.render( c )
+
+def save(path="./Vagrantfile", **kwargs):
+    c = kwargs.get('context', context)
+    with open(path, 'w') as f:
+        f.write(render(c) )
 
 
 if __name__ == '__main__':

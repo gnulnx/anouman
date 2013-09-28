@@ -15,10 +15,14 @@ except: pass
 
 context = {
     'NGINX':True,
-    'MYSQL':True,
+    'MYSQL':False,
 }
 
 templ="""#!/usr/bin/env bash
+# Setup anouman user
+sudo useradd -G admin -s /bin/bash anouman
+echo -e "anouman\nanouman\n" | sudo passwd anouman
+
 sudo apt-get update                         # Update apt-get
 sudo apt-get install -yf vim                # VIM because VI isn't as cool
 sudo apt-get install -yf git                # install git
@@ -48,6 +52,11 @@ def render(c={}):
     t = Template( templ )
     c = Context( context )
     return t.render( c )
+
+def save(path="./bootstrap", **kwargs):
+    c = kwargs.get('context', context)
+    with open(path, 'w') as f:
+        f.write(render(c))
 
 
 if __name__ == '__main__':
