@@ -148,7 +148,7 @@ are using for your django projects.  This was determiend from the output of "pip
 
 **Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with one command.
 
-        anouman --deploy example.com.tar.gz
+        anouman --deploy site1.com.tar.gz
 
 The first time you call anouman it will download and install virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv and a wrapped 'example.com' virtualenv.
 
