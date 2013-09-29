@@ -90,8 +90,7 @@ Next you need to make sure your server has the appropriate database software ins
 
     sudo apt-get install mysql-server
 
-    
-Remember this information because you know want to logout and log back in as your new user.
+Now log out and back in to confirm our user is setup correctly
 
     exit
     ssh anouman@192.168.100.100
@@ -132,12 +131,12 @@ Now when you run *manage.py collectstatic* your site will stay bundled up in one
         anouman --django-project={path to your change project} --domainname=example.com
 
 Behind the scenes your django project was copied into a directory named
-example.com/src. Inside this directory is another file which contains a listing of python packages you
+site1.com/src. Inside this directory is another file which contains a listing of python packages you
 are using for your django projects.  This was determiend from the output of "pip freeze" 
 
 ### Section2:  Deploying
 
-**Step 4:** Scp your project to the virtual machine we created above.
+**Step 4:** Scp your project to the virtual machine we created above and then log in.
 
         scp example.com.tar.gz  anouman@192.168.100/100:/home/anouman
         
