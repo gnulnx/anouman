@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# control whether we are working in test mode or not
+TEST=false
+
 USER=`whoami`
 if [ $USER == 'root' ];
 then
@@ -20,13 +23,14 @@ then
         mkvirtualenv anouman;
         workon anouman;
 
-        echo "Installing django into anouman virtualenv"
+        #echo "Installing django into anouman virtualenv"
         pip install django -q
 
-        ~/.virtualenvs/anouman/bin/pip install /vagrant/anouman-0.0.4.0.tar.gz --upgrade
-        ## TODO  pip install anouman
-        #pip install anouman  --upgrade -q
-    
+        if [ $TEST ]; then
+            ~/.virtualenvs/anouman/bin/pip install /home/anouman/anouman-0.0.4.0.tar.gz --upgrade
+        else
+            pip install anouman  --upgrade -q
+        fi
         echo "anouman basic setup now finished"
     fi
 fi
@@ -35,4 +39,6 @@ if [ $1 ];
 then
     echo "calling anouman-admin.py $@"
     anouman-admin.py $@
+else
+    echo "anouman"
 fi

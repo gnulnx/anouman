@@ -1,10 +1,11 @@
 import os
 import sys
-
 from distutils.core import setup
 from distutils.sysconfig import get_python_lib
 
 from setuptools import find_packages
+
+VERSION="0.0.4.0"
 
 # Warn if we are installing over top of an existing installation. This can
 # cause issues where files that were deleted from a more recent Dnginx are
@@ -75,12 +76,13 @@ for dirpath, dirnames, filenames in os.walk(anouman_dir):
 with open('README.rst') as file:
     long_description = file.read()
 
-version = "0.0.4.0"
 
 setup(
     name='anouman',
-    version=version,
+    version=VERSION,
     author='John Furr',
+    author_email='anouman.dev@gmail.com',
+    url='https://github.com/gnulnx/anouman',
     description=('Rapidly deploy your django project behind gunicorn and nginx'),
     long_description=long_description,
     download_url='https://github.com/gnulnx/anouman/tree/0.0.3',
@@ -100,7 +102,7 @@ setup(
     ],
     install_requires=[
         "virtualenvwrapper",
-        
+        "django", 
         # Currently only the django template engine is being used
         # but there are plans to have an anouman server monitoring
         # protion of the website  
@@ -111,9 +113,9 @@ setup(
 if overlay_warning:
     sys.stderr.write("""
 
-========
+=====================
 Danger Will Robinson!
-========
+=====================
 
 You have just installed anouman over top of an existing
 installation, without removing it first. Because of this,

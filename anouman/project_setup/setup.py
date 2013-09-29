@@ -3,20 +3,16 @@ from os.path import expanduser
 import getpass
 import subprocess
 
-# TODO refactor this template
-from anouman.templates.gunicorn_start import (
+
+from anouman.templates import (
     gunicorn_start,
-    gunicorn_context,
+    site_upstart,
+    commands,
+    nginx,
+    vagrant,
+    vagrant_bootstrap,
+    clean
 )
-
-# TODO Refactor this template
-from anouman.templates.nginx import (
-    nginx_upstart,
-    nginx_context,
-)
-
-from anouman.templates.init_script import gunicorn_upstart
-from anouman.templates.commands import commands
 
 from anouman.utils.find_files import (
     get_settings,
@@ -24,9 +20,34 @@ from anouman.utils.find_files import (
     get_manage
 )
 
+def build_vm(args):
+    if not args.vm:
+        raise Exception("build_vm must be callsed with args.mv=name")
+
+    os.mkdir(args.vm)
+    os.chdir(args.vm)
+    # Write the Vagrantfile
+    vagrant.save("Vagrantfile", context={
+            'NAME':args.vm,
+            'PUBLIC':True
+    })
+
+    # Write teh bootstrap file
+    vagrant_bootstrap.save(path="./bootstrap.sh", context={
+        'NGINX':True,
+        'MYSQL':True,
+    })
+
+    # Write the clean file
+    clean.save(path="./clean.sh", context={
+        'DOMAINNAME':'site3.com'
+    })
+    
+    subprocess.call(['vagrant', 'up'])
+
 def deploy_django_project(args):
     """
-        The Very First thing we want to do is unpack the project
+        The very first thing we want to do is unpack the project
     """
     # subproces, tar returns zero on success...
     if subprocess.call(["tar", "xvfz", args.deploy]):
@@ -50,6 +71,7 @@ def deploy_django_project(args):
     WSGI = get_wsgi(args)       # get module path to wsgi.py
     MANAGE = get_manage(args) #get abspath of manage.py
 
+    # A few useful constant are set.
     BIN=os.path.abspath("%s/bin"%(VIRTUALENV))
     PIP="%s/pip"%(BIN)
     PYTHON="%s/python"%(BIN)
@@ -60,14 +82,107 @@ def deploy_django_project(args):
     ## Now add a few shell commands to the activate script that will be
     ## unique to each deployed website
     # TODO You can potentially use virtualenv hooks.
-    commands.context['DOMAINNAME'] = args.domainname
-    cmd_str = commands.get_commands(commands.context)
     with open(ACTIVATE, 'a') as f:   
-        f.write(cmd_str)
+        f.write(
+            commands.render(
+                {'DOMAINNAME':args.domainname}
+            )
+        )
 
 
-    # Now we loop over the list of packages we stored during the packaging phase
-    # and try to install them with pip
+    """
+        Now we build up a context to apply to gunicorn_start.template.
+        default context located: anouman/templates/gunicorn_start/__init__.py
+
+        We the update gunicorn_context with our context and save the file
+        to {{domainname}}/bin/gunicorn_start
+    """
+    NAME=os.path.basename(args.django_project)
+    DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
+
+    gunicorn_start.save(GUNICORN_START, context={
+        'NAME':args.domainname,
+        'USER':getpass.getuser(),
+        'GROUP':getpass.getuser(),
+        'GUNICORN':"%s/gunicorn"%(BIN),
+        'DJANGODIR':DJANGODIR,
+        'DJANGO_SETTINGS_MODULE':SETTINGS,
+        'DJANGO_WSGI_MODULE':WSGI,
+        'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
+    })
+
+    # Set Permissions on the GUNICORN file
+    os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
+
+
+    """
+        Now we create the gunicorn upstart scripts
+    """
+    NAME=args.domainname+".conf"
+    site_upstart.save(NAME, context={
+        'GUNICORN_START':GUNICORN_START,
+        'DOMAINNAME':args.domainname,
+    })
+
+    os.system("sudo mv %s /etc/init/%s"%(NAME, NAME) )
+
+
+    ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
+    sys.path.append(os.path.dirname(settings))
+    from settings import STATIC_ROOT, MEDIA_ROOT
+    if MEDIA_ROOT:
+        if MEDIA_ROOT[-1] is not '/':
+            MEDIA_ROOT = MEDIA_ROOT + "/"
+    else:
+        MEDIA_ROOT = "/"
+
+    if STATIC_ROOT:
+        if STATIC_ROOT[-1] is not '/': #here
+            STATIC_ROOT = STATIC_ROOT + "/"
+    else:
+        STATIC_ROOT = "/"
+
+    # Create the log directory, defaults to domain/logs
+    # TODO add --logs option to allow user to specify log directory
+    PROJECT_ROOT = "/".join( STATIC_ROOT.split("/")[:-2] )
+    LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
+    os.makedirs(LOG_DIR)
+
+    """
+        nginx script for the site.
+        place in:   domainname/etc/nginx/sites-available
+        and in:   /etc/nginx/sites-available
+        link to:    /etc/nginx/sites-enabled 
+
+        Anouman should eventually be able to bring your sites on       
+        and off line simple by removing the symlink
+         
+    """
+    NGINX_CONF='nginx.%s.conf'%(args.domainname)
+    nginx.save(NGINX_CONF, context={
+        'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
+        'DOMAINNAME':args.domainname,
+        'DJANGO_STATIC':STATIC_ROOT,
+        'DJANGO_MEDIA':MEDIA_ROOT,
+        'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
+        'ERROR_LOG':"%s/error.log"%(LOG_DIR),
+    })
+
+    # First we make sure we have an /etc/ directory in our project directory.
+    # We will use this directory to store ubuntu settings files that we generate 
+    # vi anouman
+    os.makedirs("%s/etc/nginx/sites-available/"%(args.domainname) )
+    os.system("sudo cp %s %s/etc/nginx/sites-available/%s" % (NGINX_CONF, args.domainname, NGINX_CONF) )
+
+    # TODO??    Do you really need to copy to /etc/nginx/sites-available/?
+    #           Can't you just symlink from domain/etc/nginx/sites-available/
+    os.system("sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF) )
+    os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
+
+
+    """
+        This section installs the users python packages into their site virtualenv
+    """
     pkg_success = []
     pgk_fails = []
     with open("%s/pip_packages.txt"%(args.domainname)) as f:
@@ -87,109 +202,27 @@ def deploy_django_project(args):
     for f in pgk_fails:
         print "\t*\t%s"%(f)
 
-
     # Now we run the collectstatic command
     subprocess.call([PYTHON, MANAGE, "collectstatic"])
 
 
-    """
-        Now we build up a context to apply to gunicorn_start.template.
-        default context located: anouman/templates/gunicorn_start/__init__.py
-
-        We the update gunicorn_context with our context and save the file
-        to {{domainname}}/bin/gunicorn_start
-    """
-    NAME=os.path.basename(args.django_project)
-    DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
-
-    context = {
-        'NAME':args.domainname,
-        'USER':getpass.getuser(),
-        'GROUP':getpass.getuser(),
-        'GUNICORN':"%s/gunicorn"%(BIN),
-        'DJANGODIR':DJANGODIR,
-        'DJANGO_SETTINGS_MODULE':SETTINGS,
-        'DJANGO_WSGI_MODULE':WSGI,
-
-        # Default bind is unix:/var/run/domainname.com.sock
-        # Override with --bind=ip:port 
-        'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
-    }
-
-    gunicorn_context.update(context)
-
-    with open(GUNICORN_START, 'w') as f:
-        f.write( gunicorn_start( gunicorn_context ) )
-
-    # Set Permissions on the GUNICORN file
-    os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
-
 
     """
-        Now we create the gunicorn upstart scripts
+        Really?  This was the first idea you had for a setup complete message?  lol
     """
-    NAME=args.domainname+".conf"
-    gunicorn_upstart.context.update({
-        'GUNICORN_START':GUNICORN_START,
-        'DOMAINNAME':args.domainname,
-    })
-    with open(NAME, 'w') as f:
-        f.write(
-            gunicorn_upstart.build_init(
-                gunicorn_upstart.context
-            )
-        )
-
-    print "We need to copy the website startup scripts to /etc/init/"
-    print "This will require you to enter your sudo password now."
-    os.system("sudo mv %s /etc/init/%s"%(NAME, NAME) )
-
-
-    """
-        nginx script for the site.
-        place in:   /etc/nginx/sites-available
-        link to:    /etc/nginx/sites-enabled 
-
-        templ_file: anouman/templates/nginx/ngix_site.template
-         
-    """
-    ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
-    sys.path.append(os.path.dirname(settings))
-    import settings
-    if settings.STATIC_ROOT[-1] is not '/':
-        settings.STATIC_ROOT = settings.STATIC_ROOT = "/"
-
-    # Create the log directory, defaults to domain/logs
-    # TODO add --logs option to allow user to specify log directory
-    PROJECT_ROOT = "/".join( settings.STATIC_ROOT.split("/")[:-2] )
-    LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
-    os.makedirs(LOG_DIR)
-
-    nginx_context.update({
-        'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
-        'DOMAINNAME':args.domainname,
-        'DJANGO_STATIC':settings.STATIC_ROOT,
-        'DJANGO_MEDIA':settings.MEDIA_ROOT,
-        'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
-        'ERROR_LOG':"%s/error.log"%(LOG_DIR),
-        
-    })
-
-    NGINX_CONF='nginx.%s.conf'%(args.domainname)
-    with open(NGINX_CONF, 'w') as f:
-        f.write( nginx_upstart(nginx_context) )
-
-    print "We need to copy the nginx.domainname.conf file to /etc/nginx/sites-available/"
-    print "This will require sudo"
-    os.system("sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF) )
-    os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
-
-    print "\n\n----------------------------------------------"
-    print "Please add the following line(s) to your .bash_profile"
-    print "source /usr/local/bin/virtualenvwrapper.sh;"
-    print "workon %s"%(args.domainname)
-    print "\nThen call source on .bash_profile"
-    print "\n$source ~/.bash_profile"
+    print "#######################################################################"
+    print "                                                                       "    
+    print "                        SETUP COMPLETE                                 "    
+    print "                                                                       "    
+    print "         Please add the following line(s) to your .bash_profile        "
+    print "                                                                       "    
+    print "         source /usr/local/bin/virtualenvwrapper.sh                    "
+    print "         workon %s                                                     "%(args.domainname)
+    print "                                                                       "    
+    print "         Then call source on .bash_profile                             "
+    print "         $source ~/.bash_profile                                       "
+    print "                                                                       "    
+    print "#######################################################################"
 
 def package_django_project(args):
     # settings is the full path

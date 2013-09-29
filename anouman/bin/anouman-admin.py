@@ -2,8 +2,11 @@
 import os 
 import argparse
 
-
-import anouman.project_setup.setup as setup
+from anouman.project_setup.setup import (
+    package_django_project,
+    deploy_django_project,
+    build_vm,
+) 
 
 descr="""
     anouman is a django 1.4+ deployment simplifier.
@@ -18,6 +21,12 @@ descr="""
 def get_args():
     parser = argparse.ArgumentParser(
         description=descr
+    )
+    
+    parser.add_argument('--vm',
+        help='Create a virtual machine.  Pass it the VM name',
+        dest='vm',
+        default="",
     )
 
     parser.add_argument('--domainname',
@@ -120,15 +129,19 @@ def get_args():
 
 
 if __name__ == '__main__':
+    print "anouman"
     args = get_args()
+    
+    if args.vm:
+       build_vm(args) 
 
     # Project Packaging
     if args.django_project:
-        setup.package_django_project(args)
+        package_django_project(args)
     
     # Project Deploying
     if args.deploy:
-        setup.deploy_django_project(args)
+        deploy_django_project(args)
 
     # This is for creating a brand new django project
     # TODO do we still want to go this route???
@@ -136,3 +149,4 @@ if __name__ == '__main__':
         setup.new_project( args )
 
 
+    
