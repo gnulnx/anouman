@@ -289,5 +289,5 @@ following line to your /etc/hosts
 
     your.site.ip.address   www.example.com   example.com
 
-**Step 10:** Now point your browser to either site1.com and you should
-see you django website. Enjoy.
+**Step 10:** Now point your browser to example.com and you should see
+your django website. Enjoy.

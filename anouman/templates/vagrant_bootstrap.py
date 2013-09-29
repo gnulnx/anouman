@@ -5,7 +5,7 @@ from django.conf import settings
 
 ## When you initially did this you were only using django templates
 ## and this was not a full django project.  You can only call this
-## once so you put in a few files to make sure it was called...
+## once so you put it in a few files to make sure it was called...
 try: settings.configure()
 except: pass
 
@@ -20,8 +20,9 @@ context = {
 
 templ="""#!/usr/bin/env bash
 # Setup anouman user
-sudo useradd -G admin -s /bin/bash anouman
-echo -e "anouman\nanouman\n" | sudo passwd anouman
+sudo useradd --shell /bin/bash --home /home/anouman anouman
+echo -e "anouman\\nanouman\\n" | sudo passwd anouman
+sudo usermod --groups admin anouman
 
 sudo apt-get update                         # Update apt-get
 sudo apt-get install -yf vim                # VIM because VI isn't as cool
@@ -53,7 +54,7 @@ def render(c={}):
     c = Context( context )
     return t.render( c )
 
-def save(path="./bootstrap", **kwargs):
+def save(path="./bootstrap.sh", **kwargs):
     c = kwargs.get('context', context)
     with open(path, 'w') as f:
         f.write(render(c))

@@ -113,9 +113,9 @@ setup(
 if overlay_warning:
     sys.stderr.write("""
 
-========
+=====================
 Danger Will Robinson!
-========
+=====================
 
 You have just installed anouman over top of an existing
 installation, without removing it first. Because of this,

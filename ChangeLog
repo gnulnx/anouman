@@ -1,0 +1,7 @@
+0.0.4.0
+   Features:
+        - Added many unit test
+        - Initial support for --vm option to autobuild virtual machine for testing
+   Bug fixes:
+        Users are can now install anouman packages in other directorie.
+
