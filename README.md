@@ -33,11 +33,11 @@ Virtual Machine Creation and Provisioning
 
       # Create a private network, which allows host-only access to the machine 
       # using a specific IP. 
-      # config.vm.network :private_network, ip: "192.168.33.10"  
+      config.vm.network :private_network, ip: "192.168.100.100"  
 
       # Create a public network, which will make the machine appear as another 
-      #physical device on your network. 
-      config.vm.network :public_network 
+      # physical device on your network. 
+      # config.vm.network :public_network 
 
       #config.vm.provider :virtualbox do |vb| 
       # # Don't boot with headless mode 
