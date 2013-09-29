@@ -138,7 +138,7 @@ are using for your django projects.  This was determiend from the output of "pip
 
 **Step 4:** Scp your project to the virtual machine we created above and then log in.
 
-        scp example.com.tar.gz  anouman@192.168.100/100:/home/anouman
+        scp site1.com.tar.gz  anouman@192.168.100.100:/home/anouman
         
         ssh anouman@192.168.100.100
 
