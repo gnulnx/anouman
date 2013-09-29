@@ -204,7 +204,7 @@ then log in.
 
 ::
 
-        scp example.com.tar.gz  anouman@192.168.100/100:/home/anouman
+        scp site1.com.tar.gz  anouman@192.168.100.100:/home/anouman
         
         ssh anouman@192.168.100.100
 
@@ -221,7 +221,7 @@ command.
 
 ::
 
-        anouman --deploy example.com.tar.gz
+        anouman --deploy site1.com.tar.gz
 
 The first time you call anouman it will download and install
 virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv
