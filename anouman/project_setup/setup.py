@@ -216,7 +216,7 @@ def deploy_django_project(args):
     print "                                                                       "    
     print "         Please add the following line(s) to your .bash_profile        "
     print "                                                                       "    
-    print "         source /usr/local/bin/virtualenvwrapper.sh;                   "
+    print "         source /usr/local/bin/virtualenvwrapper.sh                    "
     print "         workon %s                                                     "%(args.domainname)
     print "                                                                       "    
     print "         Then call source on .bash_profile                             "
