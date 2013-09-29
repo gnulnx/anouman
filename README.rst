@@ -6,14 +6,16 @@ simplify the process of deploying
 `Django <https://www.djangoproject.com/>`__ projects behind
 `gunicorn <http://gunicorn.org/>`__/`nginx <http://nginx.com/>`__. In
 the spirit of reusing great open source software Anouman makes use of
-`virtualenv <https://pypi.python.org/pypi/virtualenv>`__/`virtualenvwrapper <http://virtualenvwrapper.readthedocs.org/en/latest/>`__
-to help manage the process of deploying your django instances.
+`virtualenv <https://pypi.python.org/pypi/virtualenv>`__,\ `virtualenvwrapper <http://virtualenvwrapper.readthedocs.org/en/latest/>`__,
+and of course `django <https://www.djangoproject.com/>`__ to help manage
+the process of deploying your django instances.
 
 The easiest way to become familiar with Anouman is to dive in and use it
 by following along with the tutorial below. However, before you begin
 you will first need to install `vagrant <http://www.vagrantup.com/>`__
-and `virtualbox <https://www.virtualbox.org/>`__. We will be using these
-tools to build a fresh Ubuntu VM to test your django deployment on.
+and `virtualbox <https://www.virtualbox.org/>`__. You will be using
+these tools to build a fresh Ubuntu VM to test your django deployment
+on.
 
 **Disclaimer:** *Anouman is still very much alpha stage software. As
 such it has only been tested on Ubuntu 12.04 using the BASH shell. I'd
@@ -49,11 +51,11 @@ and place the following vagrant settings into a file named
 
       # Create a private network, which allows host-only access to the machine 
       # using a specific IP. 
-      # config.vm.network :private_network, ip: "192.168.33.10"  
+      config.vm.network :private_network, ip: "192.168.100.100"  
 
       # Create a public network, which will make the machine appear as another 
-      #physical device on your network. 
-      config.vm.network :public_network 
+      # physical device on your network. 
+      # config.vm.network :public_network 
 
       #config.vm.provider :virtualbox do |vb| 
       # # Don't boot with headless mode 
@@ -126,20 +128,12 @@ to install mysql-server.
 
     sudo apt-get install mysql-server
 
-Now we will use ifconfig to determine the public ip address of your new
-server.
-
-::
-
-    ifconfig
-
-Remember this information because you know want to logout and log back
-in as your new user.
+Now log out and back in to confirm our user is setup correctly
 
 ::
 
     exit
-    ssh anouman@your.vm.ip.address
+    ssh anouman@192.168.100.100
 
 Assuming this worked then you are ready to walk through the anouman
 tutorial and deploy your django project on a fresh virtual machine.
@@ -163,25 +157,24 @@ python system packages.
 **Step 2:** Update your django settings file to reflect the Virtual
 Machine you are about to deploy it on.
 
-First set your database host to match the ip address of the virtual
-machine you created above. For example if your virtual machine ip is
-10.0.1.15 then make sure you have the following in the DATABASES section
-of your settings file:
+First set your database HOST to match the ip address of the virtual
+machine you created above. In you django settings.py file make sure the
+HOST portion of your DATABASE section has the following:
 
 ::
 
-    'HOST': '10.0.1.15'
+    'HOST': '192.168.100.100'
 
 Next we need to ensure that STATIC\_ROOT and MEDIA\_ROOT are set
 correctly in your settings.py file. I recommend installing into the
 anouman package location... For example if your domain name is
-*example.com* and your deployment user is *anouman* then I reccomend
+*site1.com* and your deployment user is *anouman* then I reccomend
 updating your settings.py file with the following:
 
 ::
 
-        STATIC_ROOT=/home/anouman/example.com/static_root
-        MEDIA_ROOT=/home/anouman/example.com/media_root
+        STATIC_ROOT=/home/anouman/site1.com/static_root
+        MEDIA_ROOT=/home/anouman/site1.com/media_root
         
 
 Now when you run *manage.py collectstatic* your site will stay bundled
@@ -199,18 +192,21 @@ following.
         anouman --django-project={path to your change project} --domainname=example.com
 
 Behind the scenes your django project was copied into a directory named
-example.com/src. Inside this directory is another file which contains a
+site1.com/src. Inside this directory is another file which contains a
 listing of python packages you are using for your django projects. This
 was determiend from the output of "pip freeze"
 
 Section2: Deploying
 ~~~~~~~~~~~~~~~~~~~
 
-**Step 4:** Scp your project to the virtual machine we created above.
+**Step 4:** Scp your project to the virtual machine we created above and
+then log in.
 
 ::
 
-        scp example.com.tar.gz  anouman@your.vm.ip.address:/home/anouman
+        scp example.com.tar.gz  anouman@192.168.100/100:/home/anouman
+        
+        ssh anouman@192.168.100.100
 
 **Step 5:** Install anouman into the servers system python repository.
 
@@ -239,7 +235,7 @@ following lines to the end of your .bash\_profile. If you don't have a
 ::
 
     source /usr/local/bin/virtualenvwrapper.sh
-    workon example.com
+    workon site1.com
 
 Now load the new environment:
 
@@ -287,7 +283,7 @@ following line to your /etc/hosts
 
 ::
 
-    your.site.ip.address   www.example.com   example.com
+    192.168.100.100   www.site1.com   site1.com
 
-**Step 10:** Now point your browser to example.com and you should see
-your django website. Enjoy.
+**Step 10:** Now point your browser to site1.com and you should see your
+django website. Enjoy.

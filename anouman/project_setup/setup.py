@@ -124,15 +124,12 @@ def deploy_django_project(args):
         'DOMAINNAME':args.domainname,
     })
 
-    print "We need to copy the website startup scripts to /etc/init/"
-    print "This will require you to enter your sudo password now."
     os.system("sudo mv %s /etc/init/%s"%(NAME, NAME) )
 
 
     ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
     sys.path.append(os.path.dirname(settings))
     from settings import STATIC_ROOT, MEDIA_ROOT
-    print "STATIC_ROOT: ", STATIC_ROOT
     if MEDIA_ROOT:
         if MEDIA_ROOT[-1] is not '/':
             MEDIA_ROOT = MEDIA_ROOT + "/"
@@ -213,19 +210,19 @@ def deploy_django_project(args):
     """
         Really?  This was the first idea you had for a setup complete message?  lol
     """
-    print "#########################################################################"
-    print "#                                                                       #"    
-    print "#                        SETUP COMPLETE                                 #"    
-    print "#                                                                       #"    
-    print "#         Please add the following line(s) to your .bash_profile        #"
-    print "#                                                                       #"    
-    print "#         source /usr/local/bin/virtualenvwrapper.sh;                   #"
-    print "#         workon %s                                                     #"%(args.domainname)
-    print "#                                                                       #"    
-    print "#         Then call source on .bash_profile                             #"
-    print "#         $source ~/.bash_profile                                       #"
-    print "#                                                                       #"    
-    print "#########################################################################"
+    print "#######################################################################"
+    print "                                                                       "    
+    print "                        SETUP COMPLETE                                 "    
+    print "                                                                       "    
+    print "         Please add the following line(s) to your .bash_profile        "
+    print "                                                                       "    
+    print "         source /usr/local/bin/virtualenvwrapper.sh;                   "
+    print "         workon %s                                                     "%(args.domainname)
+    print "                                                                       "    
+    print "         Then call source on .bash_profile                             "
+    print "         $source ~/.bash_profile                                       "
+    print "                                                                       "    
+    print "#######################################################################"
 
 def package_django_project(args):
     # settings is the full path
