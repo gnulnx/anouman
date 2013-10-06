@@ -29,7 +29,8 @@ context = {
     'DJANGO_SETTINGS_MODULE':'website.settings',# the django settings file
     'DJANGO_WSGI_MODULE':'website.wsgi',        # your project wsgi module
     'GUNICORN':'virtualenv/bin/gunicorn',       # location of gunicorn.py
-
+    'ERROR_LOG':'/var/log/gunicorn-error.log',        # recommend setting this to domain/logs/gunicorn-error.log
+    'ACCESS_LOG':'/var/log/gunicorn-access.log',        # recommend setting this to domain/logs/gunicorn-error.log
     #   You can bind your server to a unix socket or to a port
     #   But you should only bind it to one or the other
     #   unix socket example: /var/run/gunicorn.sock
@@ -63,6 +64,8 @@ exec {{GUNICORN}} {{DJANGO_WSGI_MODULE}}:application \
   --workers {{NUM_WORKERS}} \
   --user={{USER}} \
   --log-level=debug  \
+  --error-logfile {{ERROR_LOG}} \
+  --access-logfile {{ACCESS_LOG}} \
   {% if DAEMON %} --daemon \{% endif %}
 
 echo "gunicorn start for site: {{NAME}}"

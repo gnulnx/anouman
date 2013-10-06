@@ -79,6 +79,13 @@ def deploy_django_project(args):
     DJANGO_VERSION="django%s"%(args.django_version)
     GUNICORN_START="%s/gunicorn_start"%(BIN)
     
+    # Create the log directory, defaults to domain/logs
+    # TODO add --logs option to allow user to specify log directory
+    PROJECT_ROOT = "/".join( STATIC_ROOT.split("/")[:-2] )
+    LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
+    os.makedirs(LOG_DIR)
+
+    
     ## Now add a few shell commands to the activate script that will be
     ## unique to each deployed website
     # TODO You can potentially use virtualenv hooks.
@@ -108,6 +115,8 @@ def deploy_django_project(args):
         'DJANGODIR':DJANGODIR,
         'DJANGO_SETTINGS_MODULE':SETTINGS,
         'DJANGO_WSGI_MODULE':WSGI,
+        'ACCESS_LOG':"%s/gunicorn-access.log"%(LOG_DIR)
+        'ERROR_LOG':"%s/gunicorn-error.log"%(LOG_DIR)
         'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
     })
 
@@ -142,12 +151,6 @@ def deploy_django_project(args):
     else:
         STATIC_ROOT = "/"
 
-    # Create the log directory, defaults to domain/logs
-    # TODO add --logs option to allow user to specify log directory
-    PROJECT_ROOT = "/".join( STATIC_ROOT.split("/")[:-2] )
-    LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
-    os.makedirs(LOG_DIR)
-
     """
         nginx script for the site.
         place in:   domainname/etc/nginx/sites-available
@@ -164,8 +167,8 @@ def deploy_django_project(args):
         'DOMAINNAME':args.domainname,
         'DJANGO_STATIC':STATIC_ROOT,
         'DJANGO_MEDIA':MEDIA_ROOT,
-        'ACCESS_LOG':"%s/access.log"%(LOG_DIR),
-        'ERROR_LOG':"%s/error.log"%(LOG_DIR),
+        'ACCESS_LOG':"%s/nginx-access.log"%(LOG_DIR),
+        'ERROR_LOG':"%s/nginx-error.log"%(LOG_DIR),
     })
 
     # First we make sure we have an /etc/ directory in our project directory.
