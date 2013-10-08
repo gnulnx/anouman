@@ -81,8 +81,7 @@ def deploy_django_project(args):
     
     # Create the log directory, defaults to domain/logs
     # TODO add --logs option to allow user to specify log directory
-    PROJECT_ROOT = "/".join( STATIC_ROOT.split("/")[:-2] )
-    LOG_DIR = os.getcwd() +"/%s/logs/"%(args.domainname)
+    LOG_DIR = os.getcwd() +"/%s/logs"%(args.domainname)
     os.makedirs(LOG_DIR)
 
     
@@ -115,8 +114,8 @@ def deploy_django_project(args):
         'DJANGODIR':DJANGODIR,
         'DJANGO_SETTINGS_MODULE':SETTINGS,
         'DJANGO_WSGI_MODULE':WSGI,
-        'ACCESS_LOG':"%s/gunicorn-access.log"%(LOG_DIR)
-        'ERROR_LOG':"%s/gunicorn-error.log"%(LOG_DIR)
+        'ACCESS_LOG':"%s/gunicorn-access.log"%(LOG_DIR),
+        'ERROR_LOG':"%s/gunicorn-error.log"%(LOG_DIR),
         'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
     })
 

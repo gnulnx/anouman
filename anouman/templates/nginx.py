@@ -20,6 +20,8 @@ context = {
     'DOMAINNAME':'',
     'DJANGO_STATIC':'',
     'DJANGO_MEDIA':'',
+    'ACCESS_LOG':'',    # Project/Site based logs
+    'ERROR_LOG':''      # Project/Site based logs
 }
 
 # The nginx template.
@@ -36,9 +38,6 @@ server {
  
     client_max_body_size 128M;
  
-    #access_log /webapps/hello_django/logs/nginx-access.log;
-    #error_log /webapps/hello_django/logs/nginx-error.log;
-
     access_log  {{ACCESS_LOG}};
     error_log   {{ERROR_LOG}};
  

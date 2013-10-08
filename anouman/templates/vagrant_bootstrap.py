@@ -23,6 +23,8 @@ templ="""#!/usr/bin/env bash
 sudo useradd --shell /bin/bash --home /home/anouman anouman
 echo -e "anouman\\nanouman\\n" | sudo passwd anouman
 sudo usermod --groups admin anouman
+sudo mkdir /home/anouman
+sudo chown -R anouman:anouman /home/anouman
 
 sudo apt-get update                         # Update apt-get
 sudo apt-get install -yf vim                # VIM because VI isn't as cool
