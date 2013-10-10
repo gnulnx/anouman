@@ -5,13 +5,13 @@ import subprocess
 
 
 from anouman.templates import (
-    gunicorn_start,
-    site_upstart,
-    commands,
-    nginx,
-    vagrant,
-    vagrant_bootstrap,
-    clean
+    VagrantTemplate,
+    VagrantBootstrapTemplate,
+    CleanTemplate,
+    GunicornTemplate,
+    UpstateTemplate,
+    NginxTemplate,
+    ShellCommandTemplate,
 )
 
 from anouman.utils.find_files import (
@@ -27,23 +27,21 @@ def build_vm(args):
     os.mkdir(args.vm)
     os.chdir(args.vm)
     # Write the Vagrantfile
-    vagrant.save("Vagrantfile", context={
-            'NAME':args.vm,
-            'PUBLIC':True
+    VagrantTemplate.save("Vagrantfile", context={
+        'NAME':args.vm,
+        'PUBLIC':True
     })
 
-    # Write teh bootstrap file
-    vagrant_bootstrap.save(path="./bootstrap.sh", context={
+    # Write teh bootstrap file  
+    VagrantBootstrapTemplate.save(path="./bootstrap.sh", context={
         'NGINX':True,
         'MYSQL':True,
     })
 
     # Write the clean file
-    clean.save(path="./clean.sh", context={
-        'DOMAINNAME':'site3.com'
-    })
+    CleanTemplate.save(path="./clean.sh", context={'DOMAINNAME':'site3.com'})
     
-    subprocess.call(['vagrant', 'up'])
+    #subprocess.call(['vagrant', 'up'])
 
 def deploy_django_project(args):
     """
@@ -51,7 +49,7 @@ def deploy_django_project(args):
     """
     # subproces, tar returns zero on success...
     if subprocess.call(["tar", "xvfz", args.deploy]):
-        raise Exception( "Call to subprocess failed" )
+        raise Exception( "Call to subprocess failed on tar unpack" )
     
     # Set both args.domainname  AND args.django_project to the deploy basename
     args.domainname = args.deploy.split(".tar.gz")[0]
@@ -84,17 +82,10 @@ def deploy_django_project(args):
     LOG_DIR = os.getcwd() +"/%s/logs"%(args.domainname)
     os.makedirs(LOG_DIR)
 
-    
-    ## Now add a few shell commands to the activate script that will be
-    ## unique to each deployed website
-    # TODO You can potentially use virtualenv hooks.
-    with open(ACTIVATE, 'a') as f:   
-        f.write(
-            commands.render(
-                {'DOMAINNAME':args.domainname}
-            )
-        )
-
+    """ 
+        Append anouman shell command to activate script
+    """
+    ShellCommandTemplate.save(ACTIVATE, context={'DOMAINNAME':args.domainname})
 
     """
         Now we build up a context to apply to gunicorn_start.template.
@@ -106,7 +97,8 @@ def deploy_django_project(args):
     NAME=os.path.basename(args.django_project)
     DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
 
-    gunicorn_start.save(GUNICORN_START, context={
+    
+    GunicornTemplate.save(GUNICORN_START, context={
         'NAME':args.domainname,
         'USER':getpass.getuser(),
         'GROUP':getpass.getuser(),
@@ -122,12 +114,11 @@ def deploy_django_project(args):
     # Set Permissions on the GUNICORN file
     os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
 
-
     """
         Now we create the gunicorn upstart scripts
     """
     NAME=args.domainname+".conf"
-    site_upstart.save(NAME, context={
+    UpstateTemplate.save(NAME, context={
         'GUNICORN_START':GUNICORN_START,
         'DOMAINNAME':args.domainname,
     })
@@ -161,7 +152,7 @@ def deploy_django_project(args):
          
     """
     NGINX_CONF='nginx.%s.conf'%(args.domainname)
-    nginx.save(NGINX_CONF, context={
+    NginxTemplate.save(NGINX_CONF, context={
         'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
         'DOMAINNAME':args.domainname,
         'DJANGO_STATIC':STATIC_ROOT,
