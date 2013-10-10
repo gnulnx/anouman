@@ -96,7 +96,6 @@ def deploy_django_project(args):
     """
     NAME=os.path.basename(args.django_project)
     DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
-
     
     GunicornTemplate.save(GUNICORN_START, context={
         'NAME':args.domainname,
@@ -161,6 +160,10 @@ def deploy_django_project(args):
         'ERROR_LOG':"%s/nginx-error.log"%(LOG_DIR),
     })
 
+
+
+
+
     # First we make sure we have an /etc/ directory in our project directory.
     # We will use this directory to store ubuntu settings files that we generate 
     # vi anouman
@@ -217,14 +220,88 @@ def deploy_django_project(args):
     print "                                                                       "    
     print "#######################################################################"
 
+
+def get_static_roots(args):
+    ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
+
+    """
+        settings is the full path
+        SETTINGS is the django project path:  ex finance.settings
+    """
+    [settings, SETTINGS] = get_settings(args)
+
+    sys.path.append(os.path.dirname(settings))
+    from settings import STATIC_ROOT, MEDIA_ROOT
+    if MEDIA_ROOT:
+        if MEDIA_ROOT[-1] is not '/':
+            MEDIA_ROOT = MEDIA_ROOT + "/"
+    else:
+        MEDIA_ROOT = "/"
+
+    if STATIC_ROOT:
+        if STATIC_ROOT[-1] is not '/': #here
+            STATIC_ROOT = STATIC_ROOT + "/"
+    else:
+        STATIC_ROOT = "/"
+
+    return [STATIC_ROOT, MEDIA_ROOT]
+
 def package_django_project(args):
+    BIN=os.path.abspath("%s/bin"%(VIRTUALENV))
+    #PIP="%s/pip"%(BIN)
+    #PYTHON="%s/python"%(BIN)
+    #ACTIVATE="%s/activate"%(BIN)
+    #DJANGO_VERSION="django%s"%(args.django_version)
+
     # settings is the full path
     # SETTINGS is the django projec path, exL  finance.settings
     [settings, SETTINGS] = get_settings(args)
-    
+    WSGI = get_wsgi(args) 
     DJANGO_VERSION="django%s"%(args.django_version)
         
     os.makedirs(args.domainname)
+    os.makedirs("%s/etc/nginx/sites-available"%(args.domainname))
+    os.makedirs("%s/etc/init"%(args.domainname))
+
+    LOG_DIR = os.getcwd() +"/%s/logs"%(args.domainname)
+    os.makedirs(LOG_DIR)
+
+    [STATIC_ROOT, MEDIA_ROOT] =get_static_roots(args) 
+
+    NGINX_CONF='%s/etc/nginx/sites-available/%s.conf'%(args.domainname, args.domainname)
+    NginxTemplate.save(NGINX_CONF, context={
+        'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
+        'DOMAINNAME':args.domainname,
+        'DJANGO_STATIC':STATIC_ROOT,
+        'DJANGO_MEDIA':MEDIA_ROOT,
+        'ACCESS_LOG':"%s/nginx-access.log"%(LOG_DIR),
+        'ERROR_LOG':"%s/nginx-error.log"%(LOG_DIR),
+    })
+   
+
+    """
+        Now we build up a context to apply to gunicorn_start.template.
+        default context located: anouman/templates/gunicorn_start/__init__.py
+
+        We the update gunicorn_context with our context and save the file
+        to {{domainname}}/bin/gunicorn_start
+    """
+    NAME=os.path.basename(args.django_project)
+    DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
+
+    GUNICORN_START="%s/gunicorn_start"%(BIN)
+    GunicornTemplate.save(GUNICORN_START, context={
+        'NAME':args.domainname,
+        'USER':getpass.getuser(),
+        'GROUP':getpass.getuser(),
+        'GUNICORN':"%s/gunicorn"%(BIN),
+        'DJANGODIR':DJANGODIR,
+        'DJANGO_SETTINGS_MODULE':SETTINGS,
+        'DJANGO_WSGI_MODULE':WSGI,
+        'ACCESS_LOG':"%s/gunicorn-access.log"%(LOG_DIR),
+        'ERROR_LOG':"%s/gunicorn-error.log"%(LOG_DIR),
+        'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
+    }) 
     
     """
         Install packages from project environment into the new virtualenv.

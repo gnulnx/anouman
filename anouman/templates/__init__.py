@@ -3,20 +3,19 @@ import os
 from django.template import Template, Context
 from django.conf import settings
 
-## When you initially did this you were only using django templates
-## and this was not a full django project.  You can only call this
-## once so you put in a few files to make sure it was called...
-try: settings.configure()
-except: pass
+settings.configure()
 
 class BaseTemplate:
     """ 
         This is the base class for template rendering
         Each template to render should extend from this class and 
-        override minimall teh context, and template properties.
+        override minimalliy the context and template properties.
     """
-   
-    # This should describe the temptes context
+
+    # absolute path to the template file
+    template = ''   
+
+    # The context that will be passed to the template
     context = {
         'template':''   # This is the path to the template
     }
@@ -28,7 +27,7 @@ class BaseTemplate:
         """
         cls.context.update(c)
 
-        t = Template( open(cls.context['template']).read() )
+        t = Template( open(cls.template).read() )
         c = Context( cls.context )
         return t.render( c )
 
@@ -49,30 +48,32 @@ class VagrantTemplate(BaseTemplate):
     } 
 
 class GunicornTemplate(BaseTemplate):
+    template=os.path.dirname(os.path.realpath(__file__)) + "/gunicorn_start.sh"
+
     context = {
-        'template':os.path.dirname(os.path.realpath(__file__)) + "/gunicorn_start.sh",
-        'NAME':'website',                           # Name of the application
-        'DJANGODIR':'./',                           # Django project director
-        'USER':'username',                          # user to run as
-        'GROUP':'username',                         # group to run as
-        'NUM_WORKERS':3,                            # Number of Gunicorn threads.  2(proc)+1
-        'VIRTUALENVDIR':'./virtualenv',             # Directory containing your projects virtual env
-        'DJANGO_SETTINGS_MODULE':'website.settings',# the django settings file
-        'DJANGO_WSGI_MODULE':'website.wsgi',        # your project wsgi module
-        'GUNICORN':'virtualenv/bin/gunicorn',       # location of gunicorn.py
-        'ERROR_LOG':'/var/log/gunicorn-error.log',        # recommend setting this to domain/logs/gunicorn-error.log
-        'ACCESS_LOG':'/var/log/gunicorn-access.log',        # recommend setting this to domain/logs/gunicorn-error.log
+        'NAME':'website',                               # Name of the application
+        'DJANGODIR':'./',                               # Django project director
+        'USER':'username',                              # user to run as
+        'GROUP':'username',                             # group to run as
+        'NUM_WORKERS':3,                                # Number of Gunicorn threads.  2(proc)+1
+        'VIRTUALENVDIR':'./virtualenv',                 # Directory containing your projects virtual env
+        'DJANGO_SETTINGS_MODULE':'website.settings',    # the django settings file
+        'DJANGO_WSGI_MODULE':'website.wsgi',            # your project wsgi module
+        'GUNICORN':'virtualenv/bin/gunicorn',           # location of gunicorn.py
+        'ERROR_LOG':'/var/log/gunicorn-error.log',      # recommend setting this to domain/logs/gunicorn-error.log
+        'ACCESS_LOG':'/var/log/gunicorn-access.log',    # recommend setting this to domain/logs/gunicorn-error.log
+        'SOCKFILE':False,                               # ex:  /var/run/gunicorn.sock 
         #   You can bind your server to a unix socket or to a port
         #   But you should only bind it to one or the other
         #   unix socket example: /var/run/gunicorn.sock
         #   ip:port example:    10.0.2.13:8000
-        'BIND':False,                      # ex:  10.0.2.13:80
-        'SOCKFILE':False,                   # ex:  /var/run/gunicorn.sock
+        'BIND':False,                                   # ex:  10.0.2.13:80  Use
     }
 
 class NginxTemplate(BaseTemplate):
+    template=os.path.dirname(os.path.realpath(__file__)) + "/nginx.conf",
+
     context = {
-        'template':os.path.dirname(os.path.realpath(__file__)) + "/nginx.conf",
         'UNIXBIND':'',
         'DOMAINNAME':'',
         'DJANGO_STATIC':'',
@@ -82,23 +83,26 @@ class NginxTemplate(BaseTemplate):
     }
 
 class VagrantBootstrapTemplate(BaseTemplate):
+    template=os.path.dirname(os.path.realpath(__file__)) + "/vagrant_bootstrap.sh",
+
     context = {
-        'template':os.path.dirname(os.path.realpath(__file__)) + "/vagrant_bootstrap.sh",
         'NGINX':True,
         'MYSQL':False,
     }
 
 class UpstateTemplate(BaseTemplate):
+    template=os.path.dirname(os.path.realpath(__file__)) + "/upstart.conf",
+
     context = {
-        'template':os.path.dirname(os.path.realpath(__file__)) + "/upstart.conf",
         'GUNICORN_START':'',    # The abspath to the gunicorn_start script
         'DOMAINNAME':'',        # The domain name
     }    
 
 
 class ShellCommandTemplate(BaseTemplate):
+    template=os.path.dirname(os.path.realpath(__file__)) + "/shell_commands",
+
     context = {
-        'template':os.path.dirname(os.path.realpath(__file__)) + "/shell_commands",
         'DOMAINNAME':'',
     }
 
@@ -113,7 +117,9 @@ class ShellCommandTemplate(BaseTemplate):
 
 
 class CleanTemplate(BaseTemplate):
+    template=os.path.dirname(os.path.realpath(__file__)) + "/clean.sh",
+
     context = {
-        'template':os.path.dirname(os.path.realpath(__file__)) + "/clean.sh",
         'DOMAINNAME':'site1.com',
     }
+
