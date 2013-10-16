@@ -260,10 +260,11 @@ def package_django_project(args):
     DJANGO_VERSION="django%s"%(args.django_version)
         
     os.makedirs(args.domainname)
+    os.makedirs("%s/bin"%(args.domainname))
     os.makedirs("%s/etc/nginx/sites-available"%(args.domainname))
     os.makedirs("%s/etc/init"%(args.domainname))
 
-    LOG_DIR = os.getcwd() +"/%s/logs"%(args.domainname)
+    LOG_DIR = "/%s/logs"%(args.domainname)
     os.makedirs(LOG_DIR)
 
     [STATIC_ROOT, MEDIA_ROOT] =get_static_roots(args) 
@@ -289,7 +290,8 @@ def package_django_project(args):
     NAME=os.path.basename(args.django_project)
     DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
 
-    GUNICORN_START="%s/gunicorn_start"%(BIN)
+    #/home/anouman/.virtualenvs/johnfurr.com/bin/gunicorn_start
+    GUNICORN_START="%s/bin/gunicorn_start.sh"%(args.domainname)
     GunicornTemplate.save(GUNICORN_START, context={
         'NAME':args.domainname,
         'USER':getpass.getuser(),
