@@ -6,8 +6,9 @@ export DJANGO_SETTINGS_MODULE={{DJANGO_SETTINGS_MODULE}}
 # Make sure your project is at the beginning of PYTHONPATH
 export PYTHONPATH={{DJANGODIR}}:$PYTHONPATH
 
-# Create the run directory if it doesn't exist
+{# If using a unix socket then create the run directory #}
 {% if SOCKFILE %}
+# Make sure the directory for teh sockfile is created
 RUNDIR=$(dirname {{SOCKFILE}})
 test -d $RUNDIR || mkdir -p $RUNDIR
 {% endif %}

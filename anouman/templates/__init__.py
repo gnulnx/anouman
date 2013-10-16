@@ -16,9 +16,8 @@ class BaseTemplate:
     template = ''   
 
     # The context that will be passed to the template
-    context = {
-        'template':''   # This is the path to the template
-    }
+    # Sublcasses should specify their own context parameters
+    context = {}
 
     @classmethod
     def render(cls, c={}):
@@ -26,7 +25,6 @@ class BaseTemplate:
             Pass in a context our the defaults above will be used
         """
         cls.context.update(c)
-
         t = Template( open(cls.template).read() )
         c = Context( cls.context )
         return t.render( c )
@@ -41,8 +39,8 @@ class BaseTemplate:
             f.write(cls.render(c) )
 
 class VagrantTemplate(BaseTemplate):
+    template = os.path.dirname(os.path.realpath(__file__)) + "/Vagrantfile"
     context = {
-        'template':os.path.dirname(os.path.realpath(__file__)) + "/Vagrantfile",
         'NAME':'site1',
         'PRIVATE':'192.168.100.100', #To use private network set to ip:  192.168.100.100
     } 
@@ -71,8 +69,7 @@ class GunicornTemplate(BaseTemplate):
     }
 
 class NginxTemplate(BaseTemplate):
-    template=os.path.dirname(os.path.realpath(__file__)) + "/nginx.conf",
-
+    template=os.path.dirname(os.path.realpath(__file__)) + "/nginx.conf"
     context = {
         'UNIXBIND':'',
         'DOMAINNAME':'',
@@ -83,7 +80,7 @@ class NginxTemplate(BaseTemplate):
     }
 
 class VagrantBootstrapTemplate(BaseTemplate):
-    template=os.path.dirname(os.path.realpath(__file__)) + "/vagrant_bootstrap.sh",
+    template=os.path.dirname(os.path.realpath(__file__)) + "/vagrant_bootstrap.sh"
 
     context = {
         'NGINX':True,
@@ -91,7 +88,7 @@ class VagrantBootstrapTemplate(BaseTemplate):
     }
 
 class UpstateTemplate(BaseTemplate):
-    template=os.path.dirname(os.path.realpath(__file__)) + "/upstart.conf",
+    template=os.path.dirname(os.path.realpath(__file__)) + "/upstart.conf"
 
     context = {
         'GUNICORN_START':'',    # The abspath to the gunicorn_start script
@@ -100,7 +97,7 @@ class UpstateTemplate(BaseTemplate):
 
 
 class ShellCommandTemplate(BaseTemplate):
-    template=os.path.dirname(os.path.realpath(__file__)) + "/shell_commands",
+    template=os.path.dirname(os.path.realpath(__file__)) + "/shell_commands"
 
     context = {
         'DOMAINNAME':'',
@@ -117,7 +114,7 @@ class ShellCommandTemplate(BaseTemplate):
 
 
 class CleanTemplate(BaseTemplate):
-    template=os.path.dirname(os.path.realpath(__file__)) + "/clean.sh",
+    template=os.path.dirname(os.path.realpath(__file__)) + "/clean.sh"
 
     context = {
         'DOMAINNAME':'site1.com',

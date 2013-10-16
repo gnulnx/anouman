@@ -247,12 +247,8 @@ def get_static_roots(args):
     return [STATIC_ROOT, MEDIA_ROOT]
 
 def package_django_project(args):
-    BIN=os.path.abspath("%s/bin"%(VIRTUALENV))
-    #PIP="%s/pip"%(BIN)
-    #PYTHON="%s/python"%(BIN)
-    #ACTIVATE="%s/activate"%(BIN)
-    #DJANGO_VERSION="django%s"%(args.django_version)
-
+    BIN=os.path.abspath("%s/bin"%(args.domainname))
+    
     # settings is the full path
     # SETTINGS is the django projec path, exL  finance.settings
     [settings, SETTINGS] = get_settings(args)
@@ -264,7 +260,7 @@ def package_django_project(args):
     os.makedirs("%s/etc/nginx/sites-available"%(args.domainname))
     os.makedirs("%s/etc/init"%(args.domainname))
 
-    LOG_DIR = "/%s/logs"%(args.domainname)
+    LOG_DIR = "%s/logs"%(args.domainname)
     os.makedirs(LOG_DIR)
 
     [STATIC_ROOT, MEDIA_ROOT] =get_static_roots(args) 
@@ -292,6 +288,7 @@ def package_django_project(args):
 
     #/home/anouman/.virtualenvs/johnfurr.com/bin/gunicorn_start
     GUNICORN_START="%s/bin/gunicorn_start.sh"%(args.domainname)
+    BIND = args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname)
     GunicornTemplate.save(GUNICORN_START, context={
         'NAME':args.domainname,
         'USER':getpass.getuser(),
@@ -302,7 +299,8 @@ def package_django_project(args):
         'DJANGO_WSGI_MODULE':WSGI,
         'ACCESS_LOG':"%s/gunicorn-access.log"%(LOG_DIR),
         'ERROR_LOG':"%s/gunicorn-error.log"%(LOG_DIR),
-        'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
+        'BIND':BIND,
+        'SOCKFILE': False if 'unix' not in BIND else BIND.split('unix:')[1],
     }) 
     
     """
