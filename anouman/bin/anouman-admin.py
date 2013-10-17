@@ -139,8 +139,7 @@ if __name__ == '__main__':
     
     # Project Deploying
     if args.deploy:
-        d = Deploy(args)
-        d.deploy_django_project(args)
+        Deploy(args)
 
     # This is for creating a brand new django project
     # TODO do we still want to go this route???

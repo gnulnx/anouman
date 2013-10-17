@@ -62,28 +62,47 @@ class Deploy():
     MANAGE = ""
 
     def __init__(self, args):
-         # Setup all the project variables first
-        self.set_class_vars(args)
+        # Next we unpack the project
+        # subproces, tar returns zero on success...
+        if subprocess.call(["tar", "xvfz", args.deploy]):
+            raise Exception( "Call to subprocess failed on tar unpack" )
+        
+        # Set both args.domainname  AND args.django_project to the deploy basename
+        args.domainname = args.deploy.split(".tar.gz")[0]
+        args.django_project=args.domainname+"/src"
+   
+        home = expanduser("~")
+        self.VIRTUALENV = home+"/.virtualenvs/%s"%(args.domainname)
+        self.VIRTBIN=os.path.abspath("%s/bin"%(self.VIRTUALENV))
+        self.PIP="%s/pip"%(self.VIRTBIN)
+        self.PYTHON="%s/python"%(self.VIRTBIN)
+        self.ACTIVATE="%s/activate"%(self.VIRTBIN)
+        self.LOG_DIR = os.getcwd() +"/%s/logs"%(args.domainname)
+        self.GUNICORN_START="%s/gunicorn_start"%(self.VIRTBIN)
+
+        [self.settings, self.SETTINGS] = get_settings(args)    
+        self.WSGI = get_wsgi(args)       # get module path to wsgi.py
+        self.MANAGE = get_manage(args) #get abspath of manage.py
+
+
+        # Create log directory if it doesn't exist
+        if not os.path.isdir(self.LOG_DIR):
+            os.makedirs(self.LOG_DIR)
+
+        
+        self.deploy_django_project(args)
+
     
     def deploy_django_project(self, args):
         """
             This is the primary deploy method
         """
-    
-        # Next we unpack the project
-        # subproces, tar returns zero on success...
-        if subprocess.call(["tar", "xvfz", args.deploy]):
-            raise Exception( "Call to subprocess failed on tar unpack" )
-    
-        # Set both args.domainname  AND args.django_project to the deploy basename
-        args.domainname = args.deploy.split(".tar.gz")[0]
-        args.django_project=args.domainname+"/src"
 
         # Create a virtualenv
-        subprocess.call(["virtualenv", VIRTUALENV])
+        subprocess.call(["virtualenv", self.VIRTUALENV])
 
         # Append anouman shell command to activate script
-        ShellCommandTemplate.save(ACTIVATE, context={'DOMAINNAME':args.domainname})
+        ShellCommandTemplate.save(self.ACTIVATE, context={'DOMAINNAME':args.domainname})
 
         # Create the gunicorn_start.sh file
         self.Setup_Gunicorn_Start(args)
@@ -98,7 +117,7 @@ class Deploy():
         self.install_python_packages(args)
 
         # Run collectstatic command
-        subprocess.call([PYTHON, MANAGE, "collectstatic"])
+        subprocess.call([self.PYTHON, self.MANAGE, "collectstatic"])
 
         """
             Print output message
@@ -118,28 +137,6 @@ class Deploy():
         print "#######################################################################"
 
 
-    def set_class_vars(self, args):
-        """
-            Called at the beggning of deploy_django_project(args)
-        """
-        home = expanduser("~")
-        VIRTUALENV = home+"/.virtualenvs/%s"%(args.domainname)
-        VIRTBIN=os.path.abspath("%s/bin"%(VIRTUALENV))
-        PIP="%s/pip"%(VIRTBIN)
-        PYTHON="%s/python"%(VIRTBIN)
-        ACTIVATE="%s/activate"%(VIRTBIN)
-        LOG_DIR = os.getcwd() +"/%s/logs"%(args.domainname)
-        GUNICORN_START="%s/gunicorn_start"%(VIRTBIN)
-
-        [settings, SETTINGS] = get_settings(args)    
-        WSGI = get_wsgi(args)       # get module path to wsgi.py
-        MANAGE = get_manage(args) #get abspath of manage.py
-
-
-        # Create log directory if it doesn't exist
-        if not os.path.isdir():
-            os.makedirs(LOG_DIR)
-
 
     def SetupNGINX(self, args):
         """
@@ -157,21 +154,23 @@ class Deploy():
         """
 
         # retrieve STATIC_ROOT and MEDIA_ROOT from settings.py
-        [STATIC_ROOT, MEDIA_ROOT] = get_static_roots(args)
+        [self.STATIC_ROOT, self.MEDIA_ROOT] = get_static_roots(args)
 
         NGINX_CONF='nginx.%s.conf'%(args.domainname)
         NginxTemplate.save(NGINX_CONF, context={
             'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
             'DOMAINNAME':args.domainname,
-            'DJANGO_STATIC':STATIC_ROOT,
-            'DJANGO_MEDIA':MEDIA_ROOT,
-            'ACCESS_LOG':"%s/nginx-access.log"%(LOG_DIR),
-            'ERROR_LOG':"%s/nginx-error.log"%(LOG_DIR),
+            'DJANGO_STATIC':self.STATIC_ROOT,
+            'DJANGO_MEDIA':self.MEDIA_ROOT,
+            'ACCESS_LOG':"%s/nginx-access.log"%(self.LOG_DIR),
+            'ERROR_LOG':"%s/nginx-error.log"%(self.LOG_DIR),
         })
 
         # First we make sure we have an /etc/ directory in our project directory.
         # We will use this directory to store ubuntu settings files that we generate 
         # vi anouman
+        os.system( "rm -rf %s/etc/nginx/sites-available/"%(args.domainname) )
+        os.system( "rm -rf %s/etc/nginx/sites-enabled/"%(args.domainname) )
         os.makedirs("%s/etc/nginx/sites-available/"%(args.domainname) )
         os.system("sudo cp %s %s/etc/nginx/sites-available/%s" % (NGINX_CONF, args.domainname, NGINX_CONF) )
 
@@ -188,7 +187,7 @@ class Deploy():
         NAME=args.domainname+".conf"
 
         UpstateTemplate.save(NAME, context={
-            'GUNICORN_START':GUNICORN_START,
+            'GUNICORN_START':self.GUNICORN_START,
             'DOMAINNAME':args.domainname,
         })
 
@@ -206,23 +205,23 @@ class Deploy():
  
         NAME=os.path.basename(args.django_project)
         DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
-        GunicornTemplate.save(GUNICORN_START, context={
+        GunicornTemplate.save(self.GUNICORN_START, context={
             'NAME':args.domainname,
             'USER':getpass.getuser(),
             'GROUP':getpass.getuser(),
-            'GUNICORN':"%s/gunicorn"%(VIRTBIN),
+            'GUNICORN':"%s/gunicorn"%(self.VIRTBIN),
             'DJANGODIR':DJANGODIR,
-            'DJANGO_SETTINGS_MODULE':SETTINGS,
-            'DJANGO_WSGI_MODULE':WSGI,
-            'ACCESS_LOG':"%s/gunicorn-access.log"%(LOG_DIR),
-            'ERROR_LOG':"%s/gunicorn-error.log"%(LOG_DIR),
+            'DJANGO_SETTINGS_MODULE':self.SETTINGS,
+            'DJANGO_WSGI_MODULE':self.WSGI,
+            'ACCESS_LOG':"%s/gunicorn-access.log"%(self.LOG_DIR),
+            'ERROR_LOG':"%s/gunicorn-error.log"%(self.LOG_DIR),
             'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
         })
 
         # Set Permissions on the GUNICORN file
-        os.chmod(GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
+        os.chmod(self.GUNICORN_START, stat.S_IRWXU|stat.S_IRWXG|stat.S_IXOTH)
 
-        return GUNICORN_START
+        return self.GUNICORN_START
 
     def install_python_packages(self, args):
         """
@@ -235,12 +234,12 @@ class Deploy():
             PACKAGES.append("gunicorn")
             for package in PACKAGES:
                 try:
-                    subprocess.call([PIP, "install", package])
+                    subprocess.call([self.PIP, "install", package])
                     pkg_success.append(package)
                 except:
                     pgk_fails.append(package)
     
-        subprocess.call([PIP, "install", "-r", "%s/pip_packages.txt"%(args.domainname)])
+        subprocess.call([self.PIP, "install", "-r", "%s/pip_packages.txt"%(args.domainname)])
         print "Package Installation Results"
         print "SUCCESS: %s" %(len(pkg_success))
         print "FAIL:    %s" %(len(pgk_fails))

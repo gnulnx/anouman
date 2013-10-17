@@ -1,3 +1,5 @@
+import os
+
 from anouman.templates import (
     VagrantTemplate,
     VagrantBootstrapTemplate,

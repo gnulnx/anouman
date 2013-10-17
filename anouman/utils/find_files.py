@@ -14,6 +14,8 @@ def find_file(root_dir, pattern):
     """
         This is a generic recursive grep function
     """
+    print "find_file, root_dir: ", root_dir
+    print "find_file, pattern: ", pattern
     matches = []
     for root, dirnames, filenames in os.walk(root_dir):
         for filename in fnmatch.filter(filenames, pattern):
@@ -34,6 +36,7 @@ def get_settings(args):
           -- If not settings.py is found we throw an exception.
           -- If one settings.py is found we return it's path.
     """
+    print "get_settings args: ", args
     settings_path=''
     if not args.settings:
         matches = find_file(args.django_project, 'settings.py')
