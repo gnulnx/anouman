@@ -1,4 +1,4 @@
-import os
+import os, sys
 import fnmatch
 
 from anouman.exceptions import (
@@ -124,3 +124,21 @@ def get_manage(args):
 
     return os.path.abspath( manage_path )
 
+def get_static_roots(args):
+    ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
+    [settings, SETTINGS] = get_settings(args)
+    sys.path.append(os.path.dirname(settings))
+    from settings import STATIC_ROOT, MEDIA_ROOT
+    if MEDIA_ROOT:
+        if MEDIA_ROOT[-1] is not '/':
+            MEDIA_ROOT = MEDIA_ROOT + "/"
+    else:
+        MEDIA_ROOT = "/"
+
+    if STATIC_ROOT:
+        if STATIC_ROOT[-1] is not '/': #here
+            STATIC_ROOT = STATIC_ROOT + "/"
+    else:
+        STATIC_ROOT = "/"
+
+    return [STATIC_ROOT, MEDIA_ROOT]

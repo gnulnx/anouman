@@ -2,11 +2,9 @@
 import os 
 import argparse
 
-from anouman.project_setup.setup import (
-    package_django_project,
-    deploy_django_project,
-    build_vm,
-) 
+from anouman.project.setup import package_django_project
+from anouman.project.create_vm import build_vm
+from anouman.project.deploy import Deploy
 
 descr="""
     anouman is a django 1.4+ deployment simplifier.
@@ -141,7 +139,8 @@ if __name__ == '__main__':
     
     # Project Deploying
     if args.deploy:
-        deploy_django_project(args)
+        d = Deploy(args)
+        d.deploy_django_project(args)
 
     # This is for creating a brand new django project
     # TODO do we still want to go this route???
