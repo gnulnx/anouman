@@ -1,13 +1,10 @@
-import os, sys, stat
+import os, stat
 from os.path import expanduser
 import getpass
 import subprocess
 
 
 from anouman.templates import (
-    VagrantTemplate,
-    VagrantBootstrapTemplate,
-    CleanTemplate,
     GunicornTemplate,
     UpstateTemplate,
     NginxTemplate,
@@ -24,9 +21,8 @@ from anouman.utils.find_files import (
 
 class Deploy():
     """
-        The following modules level variables are used throughout the deployment process
+        To Deploy a site simply call Deploy(args)
     """
-
     def __init__(self, args):
         # Next we unpack the project
         # subproces, tar returns zero on success...
@@ -126,7 +122,7 @@ class Deploy():
         """
             nginx script for the site.
             place in:   domainname/etc/nginx/sites-available
-            and in:   /etc/nginx/sites-available
+            and in:     /etc/nginx/sites-available
             link to:    /etc/nginx/sites-enabled 
 
             Anouman should eventually be able to bring your sites on       
@@ -139,10 +135,6 @@ class Deploy():
 
         # retrieve STATIC_ROOT and MEDIA_ROOT from settings.py
         [self.STATIC_ROOT, self.MEDIA_ROOT] = get_static_roots(args)
-
-        print self.STATIC_ROOT
-        print self.MEDIA_ROOT
-        raw_input()
 
         NGINX_CONF='nginx.%s.conf'%(args.domainname)
         NginxTemplate.save(NGINX_CONF, context={
@@ -184,15 +176,16 @@ class Deploy():
 
     def Setup_Gunicorn_Start(self, args):
         """
-            Now we build up a context to apply to gunicorn_start.template.
-            default context located: anouman/templates/gunicorn_start/__init__.py
-
-            We the update gunicorn_context with our context and save the file
-            to {{domainname}}/bin/gunicorn_start
+            Setup and install gunicorn_start.sh on the server
+            
+            default context located: anouman/templates/gunicorn_start.sh
+            install location  {virtenv}/bin/gunicorn_start.sh
         """
- 
+
+        # set DJANGODIR env variable to abspath of project root.
         NAME=os.path.basename(args.django_project)
         DJANGODIR=os.path.abspath(args.domainname + "/" + NAME)
+
         GunicornTemplate.save(self.GUNICORN_START, context={
             'NAME':args.domainname,
             'USER':getpass.getuser(),
@@ -214,6 +207,7 @@ class Deploy():
     def install_python_packages(self, args):
         """
             This section installs the users python packages into their site virtualenv
+            TODO:  This should have better reporting for failing packages
         """
         pkg_success = []
         pgk_fails = []

@@ -179,7 +179,7 @@ def get_static_roots(args):
             reload(settings)
 
     if settings.STATIC_ROOT:
-        if settings.STATIC_ROOT[-1] is not '/': #here
+        if settings.STATIC_ROOT[-1] is not '/':
             settings.STATIC_ROOT = settings.STATIC_ROOT + "/"
     else:
         if _OkToChangeSettings(r'STATIC_ROOT', os.path.abspath("%s/static/" %(args.domainname)) ):
