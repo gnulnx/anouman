@@ -23,43 +23,9 @@ from anouman.utils.find_files import (
 
 
 class Deploy():
-
     """
         The following modules level variables are used throughout the deployment process
     """
-
-    # absolute path to the virtualenv
-    VIRTUALENV = ""
-
-    # absoluate path to virtualenv/bin/
-    VIRTBIN = ""
-
-    # absolute path to the virtualenv pip
-    PIP = ""
-
-    # absolute path the virtualenv python interpretor
-    PYTHON = ""
-
-    # absolute path the vitualenv activate script
-    ACTIVATE=""
-
-    # absolute path to the project LOGDIR
-    LOG_DIR = ""
-
-    # absolute path to the funicorn_start.sh script
-    GUNICORN_START = ""
-
-    # absolute path to the project wsgi.py
-    WSGI = ""
-
-    # django project path:  ex  project.settings
-    SETTINGS = ""
-
-    # absolute path to the settings.py
-    settings = ""
-
-    # absolute path to manage.py
-    MANAGE = ""
 
     def __init__(self, args):
         # Next we unpack the project
@@ -72,18 +38,36 @@ class Deploy():
         args.django_project=args.domainname+"/src"
    
         home = expanduser("~")
+        # absolute path to the virtualenv
         self.VIRTUALENV = home+"/.virtualenvs/%s"%(args.domainname)
+
+        # absoluate path to virtualenv/bin/
         self.VIRTBIN=os.path.abspath("%s/bin"%(self.VIRTUALENV))
+
+        # absolute path to the virtualenv pip
         self.PIP="%s/pip"%(self.VIRTBIN)
+
+        # absolute path the virtualenv python interpretor
         self.PYTHON="%s/python"%(self.VIRTBIN)
+
+        # absolute path the vitualenv activate script
         self.ACTIVATE="%s/activate"%(self.VIRTBIN)
+
+        # absolute path to the project LOGDIR
         self.LOG_DIR = os.getcwd() +"/%s/logs"%(args.domainname)
+
+        # absolute path to the gunicorn_start.sh script
         self.GUNICORN_START="%s/gunicorn_start"%(self.VIRTBIN)
 
+        # SETTINGS project path:  ex  project.settings
+        # settings absolute path to the settings.py
         [self.settings, self.SETTINGS] = get_settings(args)    
-        self.WSGI = get_wsgi(args)       # get module path to wsgi.py
-        self.MANAGE = get_manage(args) #get abspath of manage.py
 
+        # absolute path to the project wsgi.py
+        self.WSGI = get_wsgi(args) 
+
+        # absolute path to manage.py
+        self.MANAGE = get_manage(args) #get abspath of manage.py
 
         # Create log directory if it doesn't exist
         if not os.path.isdir(self.LOG_DIR):
@@ -155,6 +139,10 @@ class Deploy():
 
         # retrieve STATIC_ROOT and MEDIA_ROOT from settings.py
         [self.STATIC_ROOT, self.MEDIA_ROOT] = get_static_roots(args)
+
+        print self.STATIC_ROOT
+        print self.MEDIA_ROOT
+        raw_input()
 
         NGINX_CONF='nginx.%s.conf'%(args.domainname)
         NginxTemplate.save(NGINX_CONF, context={

@@ -31,9 +31,11 @@ def package_django_project(args):
     os.makedirs("%s/etc/nginx/sites-available"%(args.domainname))
     os.makedirs("%s/etc/init"%(args.domainname))
 
+    '''
     LOG_DIR = "%s/logs"%(args.domainname)
     os.makedirs(LOG_DIR)
 
+    
     [STATIC_ROOT, MEDIA_ROOT] =get_static_roots(args) 
 
     NGINX_CONF='%s/etc/nginx/sites-available/%s.conf'%(args.domainname, args.domainname)
@@ -73,7 +75,7 @@ def package_django_project(args):
         'BIND':BIND,
         'SOCKFILE': False if 'unix' not in BIND else BIND.split('unix:')[1],
     }) 
-    
+    '''    
     """
         Install packages from project environment into the new virtualenv.
         Also store the status for success/fail as we install them

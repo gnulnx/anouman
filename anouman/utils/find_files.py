@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, re
 import fnmatch
 
 from anouman.exceptions import (
@@ -14,8 +14,6 @@ def find_file(root_dir, pattern):
     """
         This is a generic recursive grep function
     """
-    print "find_file, root_dir: ", root_dir
-    print "find_file, pattern: ", pattern
     matches = []
     for root, dirnames, filenames in os.walk(root_dir):
         for filename in fnmatch.filter(filenames, pattern):
@@ -36,7 +34,6 @@ def get_settings(args):
           -- If not settings.py is found we throw an exception.
           -- If one settings.py is found we return it's path.
     """
-    print "get_settings args: ", args
     settings_path=''
     if not args.settings:
         matches = find_file(args.django_project, 'settings.py')
@@ -127,21 +124,66 @@ def get_manage(args):
 
     return os.path.abspath( manage_path )
 
+def change_settings(settings_file, pattern, value):
+    with  open(settings_file, 'r') as f:
+        contents = f.readlines()
+
+    match_count = 0
+    for line in contents:
+        if pattern in line and "#" not in line:
+            match_count = match_count + 1
+
+    
+    if match_count > 1:
+        print "WARNING:  More than one STATIC_ROOT line in settings file.  "
+        print "Anouman would prefer to have you set this value yourself or remove duplicate STATIC_ROOT settings"
+        return False
+
+    new_contents = []
+    for line in contents:
+        if pattern in line and "#" not in line:
+            #line = "#"+line
+            #new_contents.append(line)
+            new_contents.append('%s="%s"'%(pattern, value) )
+        else:
+            new_contents.append(line)
+
+    with open(settings_file, 'w') as f:
+        f.writelines(new_contents)
+
+    return True
+
+def _OkToChangeSettings(prop, default_location):
+    print "\n##################################################################\n"
+    print "%s is not properly set in your settings.py file"%(prop)
+    print "If you would like anouman to set this to a default value enter 'y'"
+    print "default location will be: %s"%(default_location)
+    y = raw_input()
+    if y == 'y' or y == 'Y':
+        return True
+
+    return False
+    
+
 def get_static_roots(args):
     ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
-    [settings, SETTINGS] = get_settings(args)
-    sys.path.append(os.path.dirname(settings))
-    from settings import STATIC_ROOT, MEDIA_ROOT
-    if MEDIA_ROOT:
-        if MEDIA_ROOT[-1] is not '/':
-            MEDIA_ROOT = MEDIA_ROOT + "/"
+    [settings_path, SETTINGS] = get_settings(args)
+    sys.path.append(os.path.dirname(settings_path))
+    import settings
+    if settings.MEDIA_ROOT:
+        if settings.MEDIA_ROOT[-1] is not '/':
+            settings.MEDIA_ROOT = settings.MEDIA_ROOT + "/"
     else:
-        MEDIA_ROOT = "/"
+        if _OkToChangeSettings(r'MEDIA_ROOT', os.path.abspath("%s/media/" %(args.domainname)) ):
+            change_settings(settings_path, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
+            reload(settings)
 
-    if STATIC_ROOT:
-        if STATIC_ROOT[-1] is not '/': #here
-            STATIC_ROOT = STATIC_ROOT + "/"
+    if settings.STATIC_ROOT:
+        if settings.STATIC_ROOT[-1] is not '/': #here
+            settings.STATIC_ROOT = settings.STATIC_ROOT + "/"
     else:
-        STATIC_ROOT = "/"
-
-    return [STATIC_ROOT, MEDIA_ROOT]
+        if _OkToChangeSettings(r'STATIC_ROOT', os.path.abspath("%s/static/" %(args.domainname)) ):
+            change_settings(settings_path, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
+            reload(settings)
+    
+    return [settings.STATIC_ROOT, settings.MEDIA_ROOT]
