@@ -134,7 +134,8 @@ class Deploy():
         """
 
         # retrieve STATIC_ROOT and MEDIA_ROOT from settings.py
-        [self.STATIC_ROOT, self.MEDIA_ROOT] = get_static_roots(args)
+        #[self.STATIC_ROOT, self.MEDIA_ROOT] = get_static_roots(args)
+        [self.STATIC_ROOT, self.MEDIA_ROOT] = set_static_roots(args)
         
         # Create the project etc/nginx/sites_available directory
         if not os.path.exists( "%s/etc/nginx/sites-available/"%(args.domainname) ):

@@ -142,8 +142,8 @@ def change_settings(settings_file, pattern, value):
     new_contents = []
     for line in contents:
         if pattern in line and "#" not in line:
-            #line = "#"+line
-            #new_contents.append(line)
+            line = "#"+line
+            new_contents.append(line)
             new_contents.append('%s="%s"'%(pattern, value) )
         else:
             new_contents.append(line)
@@ -163,7 +163,21 @@ def _OkToChangeSettings(prop, default_location):
         return True
 
     return False
+
+def set_static_roots(args):
+    """
+        We need to change the STATIC_ROOT and MEDIA_ROOT variables
+    """
+    [settings_path, SETTINGS] = get_settings(args)
+    sys.path.append(os.path.dirname(settings_path))
+    import settings
     
+    change_settings(settings_path, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
+    change_settings(settings_path, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
+
+    reload(settings)
+
+    return [settings.STATIC_ROOT, settings.MEDIA_ROOT]
 
 def get_static_roots(args):
     ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
