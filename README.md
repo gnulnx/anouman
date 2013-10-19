@@ -26,7 +26,7 @@ As part of the process it created a user *anouman* with sudo privileges and pass
 
 **Step 2:** Final provisioning
 
-If you are using mysql or postgres you will need to install them now.  For mysql
+If you are using mysql or [Postgres](http://www.postgresql.org/download/linux/ubuntu/) you will need to install them now.  For mysql
 
     sudo apt-get install mysql-server
 

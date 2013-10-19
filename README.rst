@@ -48,8 +48,9 @@ directory called test1. As part of the process it created a user
 
 **Step 2:** Final provisioning
 
-If you are using mysql or postgres you will need to install them now.
-For mysql
+If you are using mysql or
+`Postgres <http://www.postgresql.org/download/linux/ubuntu/>`__ you will
+need to install them now. For mysql
 
 ::
 
