@@ -3,5 +3,14 @@
         - Added many unit test
         - Initial support for --vm option to autobuild virtual machine for testing
    Bug fixes:
-        Users are can now install anouman packages in other directorie.
+        Users can now install anouman packages in other directorie.
 
+0.0.5.0
+    Updates:
+        -Refactored the template code to be more extinsible
+        -Changed naming scheme of nginx conf from "nginx.domainname.conf" to "domainname"
+        
+
+    Features:
+        -Better support for multisite installs 
+        -Finished --vm option for auto creation of virtual machines

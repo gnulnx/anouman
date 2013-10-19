@@ -135,8 +135,8 @@ def change_settings(settings_file, pattern, value):
 
     
     if match_count > 1:
-        print "WARNING:  More than one STATIC_ROOT line in settings file.  "
-        print "Anouman would prefer to have you set this value yourself or remove duplicate STATIC_ROOT settings"
+        print "WARNING:  More than one %s line in settings file." %(pattern)
+        print "Anouman would prefer to have you set this value yourself or remove duplicate %s settings" %(pattern)
         return False
 
     new_contents = []
@@ -151,18 +151,10 @@ def change_settings(settings_file, pattern, value):
     with open(settings_file, 'w') as f:
         f.writelines(new_contents)
 
+    # Flush the stdout buffer and force write to disk
+    sys.stdout.flush()
+
     return True
-
-def _OkToChangeSettings(prop, default_location):
-    print "\n##################################################################\n"
-    print "%s is not properly set in your settings.py file"%(prop)
-    print "If you would like anouman to set this to a default value enter 'y'"
-    print "default location will be: %s"%(default_location)
-    y = raw_input()
-    if y == 'y' or y == 'Y':
-        return True
-
-    return False
 
 def set_static_roots(args):
     """
@@ -177,27 +169,4 @@ def set_static_roots(args):
 
     reload(settings)
 
-    return [settings.STATIC_ROOT, settings.MEDIA_ROOT]
-
-def get_static_roots(args):
-    ## Import the users django settings file and grab the STATIC_ROOT and MEDIA_ROOT vars
-    [settings_path, SETTINGS] = get_settings(args)
-    sys.path.append(os.path.dirname(settings_path))
-    import settings
-    if settings.MEDIA_ROOT:
-        if settings.MEDIA_ROOT[-1] is not '/':
-            settings.MEDIA_ROOT = settings.MEDIA_ROOT + "/"
-    else:
-        if _OkToChangeSettings(r'MEDIA_ROOT', os.path.abspath("%s/media/" %(args.domainname)) ):
-            change_settings(settings_path, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
-            reload(settings)
-
-    if settings.STATIC_ROOT:
-        if settings.STATIC_ROOT[-1] is not '/':
-            settings.STATIC_ROOT = settings.STATIC_ROOT + "/"
-    else:
-        if _OkToChangeSettings(r'STATIC_ROOT', os.path.abspath("%s/static/" %(args.domainname)) ):
-            change_settings(settings_path, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
-            reload(settings)
-    
     return [settings.STATIC_ROOT, settings.MEDIA_ROOT]

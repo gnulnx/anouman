@@ -15,7 +15,7 @@ from anouman.utils.find_files import (
     get_settings,
     get_wsgi,
     get_manage,
-    get_static_roots
+    set_static_roots,
 )
 
 
@@ -133,8 +133,7 @@ class Deploy():
             args.django_project OR args.settings
         """
 
-        # retrieve STATIC_ROOT and MEDIA_ROOT from settings.py
-        #[self.STATIC_ROOT, self.MEDIA_ROOT] = get_static_roots(args)
+        # update STATIC_ROOT and MEDIA_ROOT in settings.py to reflect the install location
         [self.STATIC_ROOT, self.MEDIA_ROOT] = set_static_roots(args)
         
         # Create the project etc/nginx/sites_available directory

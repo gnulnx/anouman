@@ -1,4 +1,4 @@
-import os
+import os, subprocess
 
 from anouman.templates import (
     VagrantTemplate,
@@ -27,4 +27,11 @@ def build_vm(args):
     # Write the clean file
     CleanTemplate.save(path="./clean.sh", context={'DOMAINNAME':'site3.com'})
     
-    #subprocess.call(['vagrant', 'up'])
+    subprocess.call(['vagrant', 'up'])
+    print "#########################################"
+    print "#                                       #" 
+    print "#   Your VM is ready.                   #"
+    print "#   To login use the collowing command  #"
+    print "#   ssh anouman@192.168.100.100         #"
+    print "#                                       #"
+    print "#########################################"
