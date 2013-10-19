@@ -9,6 +9,7 @@
     Updates:
         -Refactored the template code to be more extinsible
         -Changed naming scheme of nginx conf from "nginx.domainname.conf" to "domainname"
+        -Automatic settings of STATIC_ROOT and MEDIA_ROOT
         
 
     Features:
