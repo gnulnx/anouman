@@ -71,10 +71,16 @@ Anouman Setup and Deployment Tutorial
 Section 1: Packaging
 ~~~~~~~~~~~~~~~~~~~~
 
-**Step 1:** Switch to the python virtualenv you use for development. You
-are using `virtualenv <http://www.virtualenv.org/en/latest/>`__ for
-python development right? If not Anouman should still work with your
-python system packages.
+This section will assume you have a django project called example. Most
+likely your project is not named example so to follow along with your
+project simple replace *example* with your project's name.
+
+Before you begin make sure to open a new Terminal window.
+
+| **Step 1:** Switch to the python virtualenv you use for development.
+You are using `virtualenv <http://www.virtualenv.org/en/latest/>`__ for
+python development right?
+|  If not Anouman should still work with your python system packages.
 
 ::
 
@@ -84,42 +90,35 @@ python system packages.
 **Step 2:** Update your django settings file to reflect the Virtual
 Machine you are about to deploy it on.
 
-First set your database HOST to match the ip address of the virtual
-machine you created above. In you django settings.py file make sure the
-HOST portion of your DATABASE section has the following:
+If you are using sqlite as your backend database you can ignore this
+section.
+
+If you are using MySQL or Postgres with your project you will likely
+need to update your DATABASE settings in your settings.py file. Look for
+the DATABASE Section and update change the HOST line to:
 
 ::
 
     'HOST': '192.168.100.100'
 
-Next we need to ensure that STATIC\_ROOT and MEDIA\_ROOT are set
-correctly in your settings.py file. I recommend installing into the
-anouman package location... For example if your domain name is
-*site1.com* and your deployment user is *anouman* then I reccomend
-updating your settings.py file with the following:
-
-::
-
-        STATIC_ROOT=/home/anouman/site1.com/static_root
-        MEDIA_ROOT=/home/anouman/site1.com/media_root
-        
-
-Now when you run *manage.py collectstatic* your site will stay bundled
-up in one nice neat directory, which turns out to be incredibly useful
-if you want to deploy and manage more than one site...
+| STATIC\_ROOT and MEDIA\_ROOT will be automatically set during
+deployment to reflect a default installion.
+| Don't worry your original settings.py file on your local machine will
+remain untouched.
 
 **Step 3:** Next you will create an anouman package that will be
 deployable on an anouman loaded server. Start by navigating to the
 directory containing your django project. This is the directory you
-originally ran "django-admin.py startproject" from and type the
-following.
+originally ran *django-admin.py startproject* from. For instance if you
+ran *django-admin startprojet example* from your home directory then you
+want to be in your home directory when you issue the folowing command:
 
 ::
 
-        anouman --django-project={path to your change project} --domainname=example.com
+        anouman --django-project=example --domainname=example.com
 
 Behind the scenes your django project was copied into a directory named
-site1.com/src. Inside this directory is another file which contains a
+example.com/src. Inside this directory is another file which contains a
 listing of python packages you are using for your django projects. This
 was determiend from the output of "pip freeze"
 
@@ -131,8 +130,14 @@ then log in.
 
 ::
 
-        scp site1.com.tar.gz  anouman@192.168.100.100:/home/anouman
+        scp example.com.tar.gz  anouman@192.168.100.100:/home/anouman
         
+
+Return to the terminal where you are logged into your vm or relogin
+with:
+
+::
+
         ssh anouman@192.168.100.100
 
 **Step 5:** Install anouman into the servers system python repository.
@@ -148,7 +153,7 @@ command.
 
 ::
 
-        anouman --deploy site1.com.tar.gz
+        anouman --deploy example.com.tar.gz
 
 The first time you call anouman it will download and install
 virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv
