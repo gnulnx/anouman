@@ -48,19 +48,19 @@ directory called test1. As part of the process it created a user
 
 **Step 2:** Final provisioning
 
-If you are using mysql or
-`Postgres <http://www.postgresql.org/download/linux/ubuntu/>`__ you will
-need to install them now. For mysql
+If you are using MySQL or Postgres you will need to install them now.
+For mysql
 
 ::
 
     sudo apt-get install mysql-server
 
 You will then need to login to the mysql server and create the
-appropriate database for your django project
+appropriate database for your django project.
 
-If you are using Postgres you will need to follow a similar protocal to
-setup your Postgres database
+If you are using
+`Postgres <http://www.postgresql.org/download/linux/ubuntu/>`__ you will
+need to follow a similar protocal to setup your Postgres database.
 
 Assuming this worked then you are ready to walk through the anouman
 tutorial and deploy your django project on a fresh virtual machine.
