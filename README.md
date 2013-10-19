@@ -32,7 +32,7 @@ If you are using mysql or postgres you will need to install them now.  For mysql
 
 You will then need to login to the mysql server and create the appropriate database for your django project
 
-If you are using postgres you will need to follow a similar protocal
+If you are using Postgres you will need to follow a similar protocal to setup your Postgres database
 
 
 Assuming this worked then you are ready to walk through the anouman tutorial and deploy your django project on a fresh virtual machine.
