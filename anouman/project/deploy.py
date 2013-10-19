@@ -97,7 +97,10 @@ class Deploy():
         self.install_python_packages(args)
 
         # Run collectstatic command
-        subprocess.call([self.PYTHON, self.MANAGE, "collectstatic"])
+        #subprocess.call([self.PYTHON, self.MANAGE, "collectstatic"])
+        print '''/bin/echo "yes" | %s %s collectstatic'''%(self.PYTHON, self.MANAGE)
+        os.system( '''/bin/echo "yes" | %s %s collectstatic'''%(self.PYTHON, self.MANAGE) )
+        #subprocess.call(['''/bin/echo "yes" | %s %s collectstatic'''%(self.PYTHON, self.MANAGE)])
 
         """
             Print output message
