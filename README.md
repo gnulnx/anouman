@@ -94,22 +94,13 @@ Return to the terminal where you are logged into your vm or relogin with:
 
         sudo pip install anouman
 
-**Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with one command.
+**Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself and in the process create a wrapped '*anouman*' virtualenv as well as a wrapped '*example.com*' virtualenv.  For the sake of this tutorial we will do both setup and deployment with one command.
 
         anouman --deploy example.com.tar.gz
 
-The first time you call anouman it will download and install virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv and a wrapped 'example.com' virtualenv.
-
-**Step 7:** We now want to update your .bash_profile so the bash environment for your site is loaded on login.  To do this add the following lines to the end of your .bash_profile.  If you don't have a .bash_profile in your home directory create one.
-
-    source /usr/local/bin/virtualenvwrapper.sh
-    workon site1.com
+Follow the intructions when this command finished to update you .bash_profile
     
-Now load the new environment:
-
-    source ~/.bash_profile
-    
-**Step 8:**  You now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
+**Step 8:**  Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
 
     site status
     
@@ -121,7 +112,11 @@ Likewise you can stop your site with:
 
     site stop
     
-and you can force nginx to do a reload with:
+Go ahead and bring the site back up:
+
+    site start
+    
+You can force nginx to do a reload with:
 
     site reload
 
@@ -129,6 +124,6 @@ These site management commands are specific to the site curently being worked on
 
 **Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
 
-    192.168.100.100   www.site1.com   site1.com
+    192.168.100.100   www.example.com   example.com
 
-**Step 10:** Now point your browser to site1.com and you should see your django website.  Enjoy. 
+**Step 10:** Now point your browser to example.com and you should see your django website.  Enjoy. 
