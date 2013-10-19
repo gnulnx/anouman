@@ -1,4 +1,4 @@
-import os, stat
+import os, stat, shutil
 from os.path import expanduser
 import getpass
 import subprocess
@@ -135,8 +135,13 @@ class Deploy():
 
         # retrieve STATIC_ROOT and MEDIA_ROOT from settings.py
         [self.STATIC_ROOT, self.MEDIA_ROOT] = get_static_roots(args)
+        
+        # Create the project etc/nginx/sites_available directory
+        if not os.path.exists( "%s/etc/nginx/sites-available/"%(args.domainname) ):
+            os.makedirs("%s/etc/nginx/sites-available/"%(args.domainname) )
 
-        NGINX_CONF='nginx.%s.conf'%(args.domainname)
+        # Save nginx config ot project/etc/nginx/sites-available
+        NGINX_CONF="%s/etc/nginx/sites-available/%s"%(args.domainname, args.domainname)
         NginxTemplate.save(NGINX_CONF, context={
             'UNIXBIND':'unix:/var/run/%s.sock' %(args.domainname),
             'DOMAINNAME':args.domainname,
@@ -146,18 +151,14 @@ class Deploy():
             'ERROR_LOG':"%s/nginx-error.log"%(self.LOG_DIR),
         })
 
-        # First we make sure we have an /etc/ directory in our project directory.
-        # We will use this directory to store ubuntu settings files that we generate 
-        # vi anouman
-        os.system( "rm -rf %s/etc/nginx/sites-available/"%(args.domainname) )
-        os.system( "rm -rf %s/etc/nginx/sites-enabled/"%(args.domainname) )
-        os.makedirs("%s/etc/nginx/sites-available/"%(args.domainname) )
-        os.system("sudo cp %s %s/etc/nginx/sites-available/%s" % (NGINX_CONF, args.domainname, NGINX_CONF) )
+        # Remove any prior installs
+        os.system("rm -f /etc/nginx/sites-available/%(dn)s /etc/nginx/sites-enabled/%(dn)s"% {'dn':args.domainname} )
 
-        # TODO??    Do you really need to copy to /etc/nginx/sites-available/?
-        #           Can't you just symlink from domain/etc/nginx/sites-available/
-        os.system("sudo mv %s /etc/nginx/sites-available/%s" % (NGINX_CONF, NGINX_CONF) )
-        os.system("sudo ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/"% (NGINX_CONF))
+        # Copy the /etc/nginx files to /etc/nginx
+        os.system("sudo cp -r %s/etc/nginx/* /etc/nginx/" %(args.domainname))
+       
+        # Symlink sites-available to sites enabled 
+        os.system("sudo ln -s /etc/nginx/sites-available/%(dn)s /etc/nginx/sites-enabled/%(dn)s"% {'dn':args.domainname} )
 
 
     def SetupUpstart(self, args):
