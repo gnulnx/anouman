@@ -7,94 +7,34 @@ The easiest way to become familiar with Anouman is to dive in and use it by foll
 
 **Disclaimer:** *Anouman is still very much alpha stage software.  As such it has only been tested on Ubuntu 12.04 using the BASH shell.  I'd love to hear from others if they get this working in other OS/SHELL combinations.*  
 
+Install Anouman
+--------------
+
+    pip install anouman
 
 Virtual Machine Creation and Provisioning
 -----------------------------------------
 
-
-**Step 1:** VM creation.  Hopefully by now you have vagrant and virtual box both installed.  Next you should create a directory called 'site1' and place the following vagrant settings into a file named *'Vagrantfile'*
-
-    # -*- mode: ruby -*-
-    # vi: set ft=ruby :
-
-    # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
-    VAGRANTFILE_API_VERSION = "2"
-
-    Vagrant.configure(VAGRANTFILE_API_VERSION) do |config| 
-      # Every Vagrant virtual environment requires a box to build off of. 
-      config.vm.box = "site1" 
-
-      # The url from where the 'config.vm.box' box will be fetched if it 
-      # doesn't already exist on the user's system. 
-      config.vm.box_url = "http://files.vagrantup.com/precise64.box" 
-
-      # Run bootstrap.sh provisioning script 
-      config.vm.provision :shell, :path => "bootstrap.sh" 
-
-      # Create a private network, which allows host-only access to the machine 
-      # using a specific IP. 
-      config.vm.network :private_network, ip: "192.168.100.100"  
-
-      # Create a public network, which will make the machine appear as another 
-      # physical device on your network. 
-      # config.vm.network :public_network 
-
-      #config.vm.provider :virtualbox do |vb| 
-      # # Don't boot with headless mode 
-      #  vb.gui = true 
-      # 
-      #  # Use VBoxManage to customize the VM. For example to change memory: 
-      #  vb.customize ["modifyvm", :id, "--memory", "1024"] 
-      #end 
-    end
-
-**Step 2:** Next you will create a simple bootstrap provision file to use with vagrant VM.  Copy the following into a file called *'bootstrap.sh'* in the same directory as your Vagrantfile.   
-
-    #!/usr/bin/env bash
-    sudo apt-get update                         # Update apt-get
-    sudo apt-get install -yf vim                # VIM because VI isn't as cool
-    sudo apt-get install -yf git                # install git
-    sudo apt-get install -yf nginx              # install nginx
-    sudo apt-get install -yf mysql-client       # only install mysql command line client
-    sudo apt-get install -yf libmysqlclient-dev # needed for django mysql integration
-
-    ### PYTHON STUFF
-    sudo apt-get install -yf python-setuptools
-    sudo apt-get install -yf python-virtualenv
-    sudo apt-get install -yf python-dev
-    sudo apt-get install -yf build-essential
-
-
-**Step 3:** Power on your virtual machine and finish setting it up:
-
-    vagrant up
+**Step 1:** VM Creation
     
-When vagrant finishes powering up, log into your VM with:
+    anouman --vm test1
 
-    vagrant ssh
-    
-Next you should create a new user for deplying your django project.  If you want to follow along closely with this tutorial then create a user name *'anouman'*.
+This command uses vagrant to create and spin up a virtual machine in a directory called test1.
+As part of the process it created a user *anouman* with sudo privileges and password *anouman*.  To login use:
 
-    sudo adduser anouman
-    
-Next you will want to give your new user sudo privileges, by editing /etc/sudoers and adding the following line:
-    
-    anouman ALL=(ALL:ALL) ALL  
-    
-directly below the line that says:
+    ssh anouman@192.168.100.100  # Password *anouman*
 
-    root    ALL=(ALL:ALL) ALL
+**Step 2:** Final provisioning
 
-
-Next you need to make sure your server has the appropriate database software installed.  This tutorial will assume you are using MySQL since the provision script above already installed mysql-client you only need to install mysql-server.
+If you are using mysql or postgres you will need to install them now.  For mysql
 
     sudo apt-get install mysql-server
 
-Now log out and back in to confirm our user is setup correctly
+You will then need to login to the mysql server and create the appropriate database for your django project
 
-    exit
-    ssh anouman@192.168.100.100
-    
+If you are using postgres you will need to follow a similar protocal
+
+
 Assuming this worked then you are ready to walk through the anouman tutorial and deploy your django project on a fresh virtual machine.
 
 
