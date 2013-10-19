@@ -4,7 +4,7 @@ import unittest
 from django.conf import settings
 settings.configure()
 
-from anouman.templates import commands
+from anouman.templates import ShellCommandTemplate
 
 class TestSequenceFunctions(unittest.TestCase):
 
@@ -17,7 +17,7 @@ class TestSequenceFunctions(unittest.TestCase):
             'DOMAINNAME':'example.com',
         }
         
-        out = commands.render(context) 
+        out = ShellCommandTemplate.render(context) 
         self.assertTrue(out == shell_commands_expected)
 
 if __name__ == '__main__':

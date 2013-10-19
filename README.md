@@ -7,94 +7,34 @@ The easiest way to become familiar with Anouman is to dive in and use it by foll
 
 **Disclaimer:** *Anouman is still very much alpha stage software.  As such it has only been tested on Ubuntu 12.04 using the BASH shell.  I'd love to hear from others if they get this working in other OS/SHELL combinations.*  
 
+Install Anouman
+--------------
+
+    pip install anouman
 
 Virtual Machine Creation and Provisioning
 -----------------------------------------
 
-
-**Step 1:** VM creation.  Hopefully by now you have vagrant and virtual box both installed.  Next you should create a directory called 'site1' and place the following vagrant settings into a file named *'Vagrantfile'*
-
-    # -*- mode: ruby -*-
-    # vi: set ft=ruby :
-
-    # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
-    VAGRANTFILE_API_VERSION = "2"
-
-    Vagrant.configure(VAGRANTFILE_API_VERSION) do |config| 
-      # Every Vagrant virtual environment requires a box to build off of. 
-      config.vm.box = "site1" 
-
-      # The url from where the 'config.vm.box' box will be fetched if it 
-      # doesn't already exist on the user's system. 
-      config.vm.box_url = "http://files.vagrantup.com/precise64.box" 
-
-      # Run bootstrap.sh provisioning script 
-      config.vm.provision :shell, :path => "bootstrap.sh" 
-
-      # Create a private network, which allows host-only access to the machine 
-      # using a specific IP. 
-      config.vm.network :private_network, ip: "192.168.100.100"  
-
-      # Create a public network, which will make the machine appear as another 
-      # physical device on your network. 
-      # config.vm.network :public_network 
-
-      #config.vm.provider :virtualbox do |vb| 
-      # # Don't boot with headless mode 
-      #  vb.gui = true 
-      # 
-      #  # Use VBoxManage to customize the VM. For example to change memory: 
-      #  vb.customize ["modifyvm", :id, "--memory", "1024"] 
-      #end 
-    end
-
-**Step 2:** Next you will create a simple bootstrap provision file to use with vagrant VM.  Copy the following into a file called *'bootstrap.sh'* in the same directory as your Vagrantfile.   
-
-    #!/usr/bin/env bash
-    sudo apt-get update                         # Update apt-get
-    sudo apt-get install -yf vim                # VIM because VI isn't as cool
-    sudo apt-get install -yf git                # install git
-    sudo apt-get install -yf nginx              # install nginx
-    sudo apt-get install -yf mysql-client       # only install mysql command line client
-    sudo apt-get install -yf libmysqlclient-dev # needed for django mysql integration
-
-    ### PYTHON STUFF
-    sudo apt-get install -yf python-setuptools
-    sudo apt-get install -yf python-virtualenv
-    sudo apt-get install -yf python-dev
-    sudo apt-get install -yf build-essential
-
-
-**Step 3:** Power on your virtual machine and finish setting it up:
-
-    vagrant up
+**Step 1:** VM Creation
     
-When vagrant finishes powering up, log into your VM with:
+    anouman --vm test1
 
-    vagrant ssh
-    
-Next you should create a new user for deplying your django project.  If you want to follow along closely with this tutorial then create a user name *'anouman'*.
+This command uses vagrant to create and spin up a virtual machine in a directory called test1.
+As part of the process it created a user *anouman* with sudo privileges and password *anouman*.  To login use:
 
-    sudo adduser anouman
-    
-Next you will want to give your new user sudo privileges, by editing /etc/sudoers and adding the following line:
-    
-    anouman ALL=(ALL:ALL) ALL  
-    
-directly below the line that says:
+    ssh anouman@192.168.100.100  # Password *anouman*
 
-    root    ALL=(ALL:ALL) ALL
+**Step 2:** Final provisioning
 
-
-Next you need to make sure your server has the appropriate database software installed.  This tutorial will assume you are using MySQL since the provision script above already installed mysql-client you only need to install mysql-server.
+If you are using MySQL or Postgres you will need to install them now.  For mysql
 
     sudo apt-get install mysql-server
 
-Now log out and back in to confirm our user is setup correctly
+You will then need to login to the mysql server and create the appropriate database for your django project.
 
-    exit
-    ssh anouman@192.168.100.100
-    
+If you are using [Postgres](http://www.postgresql.org/download/linux/ubuntu/) you will need to follow a similar [protocal](http://www.postgresql.org/download/linux/ubuntu/) to setup your Postgres database.
+
+
 Assuming this worked then you are ready to walk through the anouman tutorial and deploy your django project on a fresh virtual machine.
 
 
@@ -104,64 +44,63 @@ Anouman Setup and Deployment Tutorial
 
 ### Section 1:  Packaging
 
+This section will assume you have a django project called *example*.   Most likely your project is not named *example*
+so to follow along with your project simple replace *example* with your project's name.
+
+Before you begin make sure to open a new Terminal window.
+
 **Step 1:** Switch to the python virtualenv you use for development.
-        You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  If not Anouman should still work with your python system packages.
+        You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  
+        If not Anouman should still work with your python system packages.
 
         source /path/to/your/virtualenv/activate
         pip install anouman
 
 **Step 2:** Update your django settings file to reflect the Virtual Machine you are about to deploy it on.
 
-First set your database HOST to match the ip address of the virtual machine you created above.  In you django settings.py file make sure the HOST portion of your DATABASE section has the following:
+If you are using sqlite as your backend database you can ignore this section.
 
+If you are using MySQL or Postgres with your project you will likely need to update your DATABASE settings in your settings.py file.
+Look for the DATABASE Section and update change the HOST line to:
+    
     'HOST': '192.168.100.100'
     
-Next we need to ensure that STATIC_ROOT and MEDIA_ROOT are set correctly in your settings.py file.  I recommend installing into the anouman package location...  For example if your domain name is *site1.com* and your deployment user is *anouman* then I reccomend updating your settings.py file with the following:
-
-        STATIC_ROOT=/home/anouman/site1.com/static_root
-        MEDIA_ROOT=/home/anouman/site1.com/media_root
-        
-Now when you run *manage.py collectstatic* your site will stay bundled up in one nice neat directory, which turns out to be incredibly useful if you want to deploy and manage more than one site...
+STATIC_ROOT and MEDIA_ROOT will be automatically set during deployment to reflect a default installion.  
+Don't worry your original settings.py file on your local machine will remain untouched.
 
 **Step 3:** Next you will create an anouman package that will be deployable on an anouman loaded
         server.  Start by navigating to the directory containing your django project.
-        This is the directory you originally ran "django-admin.py startproject" from and type the following.
-        
+        This is the directory you originally ran *django-admin.py startproject* from.
+        For instance if you ran *django-admin startprojet example* from your home directory then you 
+        want to be in your home directory when you issue the folowing command:
 
-        anouman --django-project={path to your change project} --domainname=example.com
+        anouman --django-project=example --domainname=example.com
 
 Behind the scenes your django project was copied into a directory named
-site1.com/src. Inside this directory is another file which contains a listing of python packages you
+example.com/src. Inside this directory is another file which contains a listing of python packages you
 are using for your django projects.  This was determiend from the output of "pip freeze" 
 
 ### Section2:  Deploying
 
 **Step 4:** Scp your project to the virtual machine we created above and then log in.
 
-        scp site1.com.tar.gz  anouman@192.168.100.100:/home/anouman
+        scp example.com.tar.gz  anouman@192.168.100.100:/home/anouman
         
+Return to the terminal where you are logged into your vm or relogin with:
+
         ssh anouman@192.168.100.100
 
 **Step 5:** Install anouman into the servers system python repository.
 
         sudo pip install anouman
 
-**Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself.  For the sake of this tutorial we will do both setup and deployment with one command.
+**Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself and in the process create a wrapped '*anouman*' virtualenv as well as a wrapped '*example.com*' virtualenv.  For the sake of this tutorial we will do both setup and deployment with one command.
 
-        anouman --deploy site1.com.tar.gz
+        anouman --deploy example.com.tar.gz
 
-The first time you call anouman it will download and install virtualenv/virtualenvwrapper and create a wrapped 'anouman' virtualenv and a wrapped 'example.com' virtualenv.
-
-**Step 7:** We now want to update your .bash_profile so the bash environment for your site is loaded on login.  To do this add the following lines to the end of your .bash_profile.  If you don't have a .bash_profile in your home directory create one.
-
-    source /usr/local/bin/virtualenvwrapper.sh
-    workon site1.com
+Follow the intructions when this command finished to update you .bash_profile
     
-Now load the new environment:
-
-    source ~/.bash_profile
-    
-**Step 8:**  You now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
+**Step 8:**  Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
 
     site status
     
@@ -173,7 +112,11 @@ Likewise you can stop your site with:
 
     site stop
     
-and you can force nginx to do a reload with:
+Go ahead and bring the site back up:
+
+    site start
+    
+You can force nginx to do a reload with:
 
     site reload
 
@@ -181,6 +124,6 @@ These site management commands are specific to the site curently being worked on
 
 **Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
 
-    192.168.100.100   www.site1.com   site1.com
+    192.168.100.100   www.example.com   example.com
 
-**Step 10:** Now point your browser to site1.com and you should see your django website.  Enjoy. 
+**Step 10:** Now point your browser to example.com and you should see your django website.  Enjoy. 

@@ -1,4 +1,4 @@
-import os
+import os, sys, re
 import fnmatch
 
 from anouman.exceptions import (
@@ -124,3 +124,49 @@ def get_manage(args):
 
     return os.path.abspath( manage_path )
 
+def change_settings(settings_file, pattern, value):
+    with  open(settings_file, 'r') as f:
+        contents = f.readlines()
+
+    match_count = 0
+    for line in contents:
+        if pattern in line and "#" not in line:
+            match_count = match_count + 1
+
+    
+    if match_count > 1:
+        print "WARNING:  More than one %s line in settings file." %(pattern)
+        print "Anouman would prefer to have you set this value yourself or remove duplicate %s settings" %(pattern)
+        return False
+
+    new_contents = []
+    for line in contents:
+        if pattern in line and "#" not in line:
+            line = "#"+line
+            new_contents.append(line)
+            new_contents.append('%s="%s"'%(pattern, value) )
+        else:
+            new_contents.append(line)
+
+    with open(settings_file, 'w') as f:
+        f.writelines(new_contents)
+
+    # Flush the stdout buffer and force write to disk
+    sys.stdout.flush()
+
+    return True
+
+def set_static_roots(args):
+    """
+        We need to change the STATIC_ROOT and MEDIA_ROOT variables
+    """
+    [settings_path, SETTINGS] = get_settings(args)
+    sys.path.append(os.path.dirname(settings_path))
+    import settings
+    
+    change_settings(settings_path, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
+    change_settings(settings_path, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
+
+    reload(settings)
+
+    return [settings.STATIC_ROOT, settings.MEDIA_ROOT]
