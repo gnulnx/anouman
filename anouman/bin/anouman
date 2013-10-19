@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # control whether we are working in test mode or not
-TEST=true
+TEST=false
 
 USER=`whoami`
 if [ $USER == 'root' ];
