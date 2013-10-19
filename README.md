@@ -44,7 +44,7 @@ Anouman Setup and Deployment Tutorial
 
 ### Section 1:  Packaging
 
-This section will assume you have a django project called *example*.   Most likely your project is not named example
+This section will assume you have a django project called *example*.   Most likely your project is not named *example*
 so to follow along with your project simple replace *example* with your project's name.
 
 Before you begin make sure to open a new Terminal window.
