@@ -5,10 +5,11 @@ from distutils.sysconfig import get_python_lib
 
 from setuptools import find_packages
 
-VERSION="0.0.5.1"
+VERSION="0.0.6.0"
 
 # Make sure README.rst is in sync with README.md  #*rst used by pypi and *md used by github
-os.system("pandoc --from=markdown --to=rst --output=README.rst README.md")
+try: os.system("pandoc --from=markdown --to=rst --output=README.rst README.md")
+except: pass 
 
 # Warn if we are installing over top of an existing installation. This can
 # cause issues where files that were deleted from a more recent Dnginx are

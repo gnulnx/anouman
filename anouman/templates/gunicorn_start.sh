@@ -19,7 +19,7 @@ exec {{GUNICORN}} {{DJANGO_WSGI_MODULE}}:application \
   --name {{NAME}} \
   --workers {{NUM_WORKERS}} \
   --user={{USER}} \
-  --log-level=debug  \
+  --log-level={{LOG_LEVEL}}  \
   --error-logfile {{ERROR_LOG}} \
   --access-logfile {{ACCESS_LOG}} \
   {% if DAEMON %} --daemon \{% endif %}

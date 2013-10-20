@@ -19,3 +19,9 @@
 0.0.5.1
     Bugs:
         -Fixed documentation errors
+
+0.0.6.0
+    Updates:
+    - Set DEBUG=False
+    - Set ALLOWED_HOSTS=['domainname']
+    - Added --gunicorn-log-level to set gunicorn log level.  Defaults to 'info'

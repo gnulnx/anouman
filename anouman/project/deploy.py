@@ -1,4 +1,4 @@
-import os, stat, shutil
+import os, sys, stat, shutil
 from os.path import expanduser
 import getpass
 import subprocess
@@ -15,7 +15,7 @@ from anouman.utils.find_files import (
     get_settings,
     get_wsgi,
     get_manage,
-    set_static_roots,
+    change_settings,
 )
 
 
@@ -69,10 +69,42 @@ class Deploy():
         if not os.path.isdir(self.LOG_DIR):
             os.makedirs(self.LOG_DIR)
 
-        
+
+        # Update Settings File
+        self.update_settings_file(args)
+       
+        # Now deploy the django project 
         self.deploy_django_project(args)
 
-    
+    def update_settings_file(self, args):
+        """
+            We need to change the STATIC_ROOT and MEDIA_ROOT variables to default anouman locations.
+            TODO: Eventually this should allow users to make modifications to these files in the
+            Anouman bundle and not have --deploy overwrite them.
+        
+            We also need to change DEBUG to False for production use
+        """
+
+        # First import the settings file
+        [settings_path, SETTINGS] = get_settings(args)
+        sys.path.append(os.path.dirname(settings_path))
+        import settings
+
+        # Then modify settings
+        change_settings(settings_path, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
+        change_settings(settings_path, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
+
+        # Set Debug to False and update ALLOWED_HOSTS to match domain name
+        change_settings(settings_path, r'DEBUG', False )
+        change_settings(settings_path, r'ALLOWED_HOSTS', ["%s"%(args.domainname)] )
+
+        # Now reload the settings file
+        reload(settings)
+
+        # And set some class variables
+        self.STATIC_ROOT = settings.STATIC_ROOT
+        self.MEDIA_ROOT = settings.MEDIA_ROOT
+
     def deploy_django_project(self, args):
         """
             This is the primary deploy method
@@ -97,14 +129,10 @@ class Deploy():
         self.install_python_packages(args)
 
         # Run collectstatic command
-        #subprocess.call([self.PYTHON, self.MANAGE, "collectstatic"])
-        print '''/bin/echo "yes" | %s %s collectstatic'''%(self.PYTHON, self.MANAGE)
+        # TODO Figure out why you weren't able to do this with subprocess.call([])
         os.system( '''/bin/echo "yes" | %s %s collectstatic'''%(self.PYTHON, self.MANAGE) )
-        #subprocess.call(['''/bin/echo "yes" | %s %s collectstatic'''%(self.PYTHON, self.MANAGE)])
 
-        """
-            Print output message
-        """
+
         print "#######################################################################"
         print "                                                                       "    
         print "                        SETUP COMPLETE                                 "    
@@ -136,8 +164,6 @@ class Deploy():
             args.django_project OR args.settings
         """
 
-        # update STATIC_ROOT and MEDIA_ROOT in settings.py to reflect the install location
-        [self.STATIC_ROOT, self.MEDIA_ROOT] = set_static_roots(args)
         
         # Create the project etc/nginx/sites_available directory
         if not os.path.exists( "%s/etc/nginx/sites-available/"%(args.domainname) ):
@@ -200,6 +226,7 @@ class Deploy():
             'DJANGO_WSGI_MODULE':self.WSGI,
             'ACCESS_LOG':"%s/gunicorn-access.log"%(self.LOG_DIR),
             'ERROR_LOG':"%s/gunicorn-error.log"%(self.LOG_DIR),
+            'LOG_LEVEL':args.gunicorn_log_level,
             'BIND':args.bind if args.bind else 'unix:/var/run/%s.sock' %(args.domainname),
         })
 

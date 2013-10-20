@@ -130,21 +130,32 @@ def change_settings(settings_file, pattern, value):
 
     match_count = 0
     for line in contents:
-        if pattern in line and "#" not in line:
+        #if pattern in line and "#" not in line:
+        if pattern in line[:len(pattern)]:
             match_count = match_count + 1
 
+    if match_count == 0:
+        print "ERROR  Property %s was not found in your settings file" %(pattern)
+        print "Anouman would prefer to have you set this value yourself or remove duplicate %s settings" %(pattern)
+        return False
     
     if match_count > 1:
-        print "WARNING:  More than one %s line in settings file." %(pattern)
+        print "ERROR:  More than one %s line in settings file." %(pattern)
         print "Anouman would prefer to have you set this value yourself or remove duplicate %s settings" %(pattern)
         return False
 
     new_contents = []
     for line in contents:
-        if pattern in line and "#" not in line:
+        #if pattern in line and "#" not in line:
+        if pattern in line[:len(pattern)]:
             line = "#"+line
             new_contents.append(line)
-            new_contents.append('%s="%s"'%(pattern, value) )
+            if type(value) == str:
+                new_contents.append('%s="%s"\n'%(pattern, value) )
+            elif type(value) == bool or type(value) == list:
+                new_contents.append('%s=%s\n'%(pattern, value) )
+            else:
+                raise Exception("No match for: ", type(pattern))
         else:
             new_contents.append(line)
 

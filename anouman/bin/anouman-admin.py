@@ -51,6 +51,12 @@ def get_args():
         default=False,
     )
     
+    parser.add_argument('--gunicorn-log-level',
+        help='Set gunicorn loglevel:  debug, info, warn, error, critical',
+        dest='gunicorn_log_level',
+        default='info',
+    )
+
     parser.add_argument('--settings',
         help='Specify path to settings.py',
         dest='settings',
