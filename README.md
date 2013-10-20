@@ -110,7 +110,7 @@ If you are using an sqlite database then I recommend you create example.com/DB a
     
 **Step 5**  Explore Anouman Shell Commands
 
-Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
+Assuming you updated and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
 
     site status
     
