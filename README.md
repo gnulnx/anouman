@@ -54,7 +54,7 @@ so follow along with your own project by simply replacing *example* with your pr
 
 Before you begin make sure to open a new Terminal window.
 
-**Step 1:** Install anouman
+**Step 1:** Install Anouman
 
 Switch to the python virtualenv you use for development.
 You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  
@@ -68,7 +68,7 @@ Now install Anouman
 
 **Step 2:** Create Anouman Package
 
-In this step you will use anouman to create a deployable package from your django project.  Start by navigating to the directory containing your django project. This is the directory you originally ran *django-admin.py startproject* from. For instance if you ran *django-admin start-project example* from your home directory then you want to be in your home directory when you issue the following command:
+In this step you will use Anouman to create a deployable package from your django project.  Start by navigating to the directory containing your django project. This is the directory you originally ran *django-admin.py startproject* from. For instance if you ran *django-admin start-project example* from your home directory then you want to be in your home directory when you issue the following command:
 
         anouman --django-project=example --domainname=example.com
 
@@ -92,19 +92,25 @@ Return to the terminal where you are logged into your vm or relogin with:
 
         sudo pip install anouman
 
-**Step 3:** Setup anouman and deploy your new project as a normal user.   The first time you run anouman, with or without arguments, it will install itself and in the process create a wrapped '*anouman*' virtualenv as well as a wrapped '*example.com*' virtualenv.  For the sake of this tutorial we will do both setup and deployment with one command.
+**Step 3:** Setup Anouman and deploy your new project.
+
+*Anouman requires all projects to be installed as a non root user.*
+
+The first time you run Anouman it will install itself and in the process create a wrapped '*anouman*' virtualenv as well as a wrapped '*example.com*' virtualenv.  
 
         anouman --deploy example.com.tar.gz
 
-Follow the intructions when this command finishes to update/source your .bash_profile.  You should now have your web site deployed behind NGINX/gunicorn.  However you will still need to finish the remaining steps to get your site up and running correctly.
+Follow the intructions when this command finishes to update/source your .bash_profile.  You should now have your web site deployed behind nginx/gunicorn.  However you will still need to finish the remaining steps to get your site up and running correctly.
     
 **STep 4:** Ensure your database settings are correct.
 
-Your project should now be locate in example.com/src.  Please update the DATABASE section to point to your database. If it was a MySQL or Postgres DB running on localhost then you may only need to populate the database.  If it was MySQL or Postgres on a remotly accessible database then you likely have nothing to do.
+Your project should now be locate in example.com/src.  Please update the DATABASE section of settings.py so that it points to your database. If it was a MySQL or Postgres DB running on localhost then you may only need to populate the database.  If it was MySQL or Postgres on a remotly accessible database then you likely have nothing to do.
 
 If you are using an sqlite database then I recommend you create example.com/DB and copy your sqlite database into this directory.  If you are folling along with the tutorial then you would change the DATABASE NAME section in your settings.py file to  /home/anouman/example.com/DB/{name_of_your_db}
     
-**Step 5**  Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
+**Step 5**  Explore Anouman Shell Commands
+
+Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
 
     site status
     
@@ -126,8 +132,14 @@ You can force nginx to do a reload with:
 
 These site management commands are specific to the site curently being worked on.  If you install another django project anouman will gladly set it up for you and ensure that nginx properly directs traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed with anouman is as simple as switching wrapped virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
 
-**Step 6:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
+**Step 6:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 7).  Next, add the following line to your /etc/hosts
 
     192.168.100.100   www.example.com   example.com
+    
+If you setup another site, say site2.com on the same server then you would add another line to /etc/hsots
+
+    192.168.100.100 www.site2.com   site1.com
+    
+NGINX will now properly direct traffic based on the URL to the correct gunicorn/django backend as well as server the correct static files for the given project. 
 
 **Step 7:** Now point your browser to example.com and you should see your django website.  Enjoy. 
