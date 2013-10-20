@@ -54,19 +54,7 @@ so follow along with your own project by simply replacing *example* with your pr
 
 Before you begin make sure to open a new Terminal window.
 
-**Step 1:** Install Anouman
-
-Switch to the python virtualenv you use for development.
-You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  
-*If not Anouman should still work with your python system packages.*
-
-        source /path/to/your/virtualenv/activate
-
-Now install Anouman
-
-        pip install anouman
-
-**Step 2:** Create Anouman Package
+**Step 1:** Create Anouman Package
 
 In this step you will use Anouman to create a deployable package from your django project.  Start by navigating to the directory containing your django project. This is the directory you originally ran *django-admin.py startproject* from. For instance if you ran *django-admin start-project example* from your home directory then you want to be in your home directory when you issue the following command:
 
@@ -76,7 +64,7 @@ Behind the scenes your django project was copied into a directory named example.
 
 ### Section2:  Deploying
 
-**Step 1:** Copy files to server
+**Step 2:** Copy files to server
 
 Scp your Anouman bundle to the virtual machine we created above and then log in.
 
@@ -88,11 +76,11 @@ Return to the terminal where you are logged into your vm or relogin with:
 
         ssh anouman@192.168.100.100
 
-**Step 2:** Install Anouman into the servers system python repository.  
+**Step 3:** Install Anouman into the servers system python repository.  
 
         sudo pip install anouman
 
-**Step 3:** Setup Anouman and deploy your new project.
+**Step 4:** Setup Anouman and deploy your new project.
 
 *Anouman requires all projects to be installed as a non root user.*
 
@@ -106,13 +94,13 @@ Anouman has also modified your STATIC_ROOT and MEDIA_ROOT variables in settings.
 
 Your site should now be running behind nginx/gunicon with static files properly being servered, however you still have a few steps remaining before everything will work correctly.
     
-**STep 4:** Ensure your database settings are correct.
+**STep 5:** Ensure your database settings are correct.
 
 Your site should now be deployed into a directory called */home/anouman/example.com*.  Your original django project can be found in *example.com/src*.  Please update the DATABASE section of settings.py so that it points to your database. If it was a MySQL or Postgres DB running on localhost then you may only need to populate the database.  If it was MySQL or Postgres on a remotely accessible database then you likely have nothing to do.
 
 If you are using an sqlite database then I recommend you create example.com/DB and copy your sqlite database into this directory.  If you are following along with the tutorial then you would change the DATABASE NAME section in your settings.py file to  /home/anouman/example.com/DB/{name_of_your_db}
     
-**Step 5**  Explore Anouman Shell Commands
+**Step 6**  Explore Anouman Shell Commands
 
 Assuming you updated and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script which is locate in .  For instance to check the status of gunicorn/nginx type:
 
@@ -136,7 +124,7 @@ You can force nginx to do a reload with:
 
 These site management commands are specific to the site curently being worked on.  If you install another django project Anouman will gladly set it up for you and ensure that nginx properly directs traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed with Anouman is as simple as switching wrapped virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
 
-**Step 6:**  Adjust client */etc/hosts* file to simulate DNS for your web site.  
+**Step 7:**  Adjust client */etc/hosts* file to simulate DNS for your web site.  
 
 First make sure your site is running (see step 7).  Next, add the following line to your */etc/hosts*.
 
@@ -148,4 +136,4 @@ If you setup another site, say site2.com, on the same server then you would add 
     
 NGINX will now properly direct traffic based on the URL to the correct gunicorn/django backend as well as server the correct static files for the given project. 
 
-**Step 7:** Now point your browser to example.com and you should see your django website.  Enjoy. 
+**Step 8:** Now point your browser to example.com and you should see your django website.  Enjoy. 
