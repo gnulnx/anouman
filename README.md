@@ -61,24 +61,7 @@ Now install Anouman
 
         pip install anouman
 
-**Step 2:** Update DATABASE settings
-
-If you are using sqlite you will need to copy your database file to the server
-and then update the NAME section of the DATABASE dictionary in settings.py.
-*A future version will take care of copying your database to a default location and updating your setting file*
-
-
-If your are using a MySQL or Postgres database on a remote server then you may have nothing else to do.
-If you SQL server is located on the same machine then you will need
-If you are using MySQL or Postgres with your project you will likely need to update the HOST section of the DATABASE dictionary in settings.py.
-Look for the DATABASE section and change the HOST line to:
-    
-    'HOST': '192.168.100.100'
-    
-STATIC_ROOT and MEDIA_ROOT will be automatically set during deployment to reflect a default installion.  
-Don't worry your original settings.py file on your local machine will remain untouched.
-
-**Step 3:** Next you will create an anouman package that will be deployable on an anouman loaded
+**Step 2:** Next you will create an anouman package that will be deployable on an anouman loaded
         server.  Start by navigating to the directory containing your django project.
         This is the directory you originally ran *django-admin.py startproject* from.
         For instance if you ran *django-admin startprojet example* from your home directory then you 
@@ -92,7 +75,7 @@ are using for your django projects.  This was determiend from the output of "pip
 
 ### Section2:  Deploying
 
-**Step 4:** Scp your project to the virtual machine we created above and then log in.
+**Step 1:** Scp your project to the virtual machine we created above and then log in.
 
         scp example.com.tar.gz  anouman@192.168.100.100:/home/anouman
         
@@ -100,17 +83,31 @@ Return to the terminal where you are logged into your vm or relogin with:
 
         ssh anouman@192.168.100.100
 
-**Step 5:** Install anouman into the servers system python repository.
+**Step 2:** Copy your Database
+
+If you are using sqlite and it is not contained in your project directory then you will now need to copy it to the VM as well. *A future version will take care of copying your database to a default location and updating your setting file*
+
+If you are using sqlite you will need to copy your database file to the server
+and then update the NAME section of the DATABASE dictionary in settings.py.
+*A future version will take care of copying your database to a default location and updating your setting file*
+
+**Step 3:** Install anouman into the servers system python repository.
 
         sudo pip install anouman
 
-**Step 6:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself and in the process create a wrapped '*anouman*' virtualenv as well as a wrapped '*example.com*' virtualenv.  For the sake of this tutorial we will do both setup and deployment with one command.
+**Step 4:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself and in the process create a wrapped '*anouman*' virtualenv as well as a wrapped '*example.com*' virtualenv.  For the sake of this tutorial we will do both setup and deployment with one command.
 
         anouman --deploy example.com.tar.gz
 
-Follow the intructions when this command finished to update you .bash_profile
+Follow the intructions when this command finishes to update/source your .bash_profile.  You should now have your web site deployed behind NGINX/gunicorn.  
     
-**Step 8:**  Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
+**STep 5:** Ensure you database settings are correct.
+
+Your project should now be locate in example.com/src.  Please update the DATABASE section to point to your database. If it was a MySQL or Postgres running on localhost then you may only need to populate the database.  If it was MySQL or Postgres on a remotly accessible database then you likely have nothing to do.
+
+If you are using an sqlite database then I recommend you create example.com/DB and copy your sqlite database into this directory.  If you are folling along with the tutorial then you would change the NAME section to  /home/anouman/example.com/DB/{name_of_your_db}
+    
+**Step 6**  Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
 
     site status
     
@@ -132,8 +129,8 @@ You can force nginx to do a reload with:
 
 These site management commands are specific to the site curently being worked on.  If you install another django project anouman will gladly set it up for you and ensure that nginx properly directs traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed with anouman is as simple as switching wrapped virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
 
-**Step 9:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
+**Step 6:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 8).  Next, add the following line to your /etc/hosts
 
     192.168.100.100   www.example.com   example.com
 
-**Step 10:** Now point your browser to example.com and you should see your django website.  Enjoy. 
+**Step 7:** Now point your browser to example.com and you should see your django website.  Enjoy. 
