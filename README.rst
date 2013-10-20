@@ -89,24 +89,7 @@ your own project by simply replacing *example* with your project's name.
 
 Before you begin make sure to open a new Terminal window.
 
-**Step 1:** Install Anouman
-
-| Switch to the python virtualenv you use for development. You are using
-`virtualenv <http://www.virtualenv.org/en/latest/>`__ for python
-development right?
-| *If not Anouman should still work with your python system packages.*
-
-::
-
-        source /path/to/your/virtualenv/activate
-
-Now install Anouman
-
-::
-
-        pip install anouman
-
-**Step 2:** Create Anouman Package
+**Step 1:** Create Anouman Package
 
 In this step you will use Anouman to create a deployable package from
 your django project. Start by navigating to the directory containing
@@ -249,7 +232,7 @@ workon site2.com, etc.
 **Step 6:** Adjust client */etc/hosts* file to simulate DNS for your web
 site.
 
-First make sure your site is running (see step 7). Next, add the
+First make sure your site is running (see step 5). Next, add the
 following line to your */etc/hosts*.
 
 ::
