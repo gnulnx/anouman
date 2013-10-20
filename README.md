@@ -104,7 +104,7 @@ Follow the intructions when this command finishes to update/source your .bash_pr
     
 **STep 4:** Ensure your database settings are correct.
 
-Your project should now be locate in example.com/src.  Please update the DATABASE section of settings.py so that it points to your database. If it was a MySQL or Postgres DB running on localhost then you may only need to populate the database.  If it was MySQL or Postgres on a remotly accessible database then you likely have nothing to do.
+Your site should now be deployed into a directory called */home/anouman/example.com*.  Your original django project can be found in *example.com/src*.  Please update the DATABASE section of settings.py so that it points to your database. If it was a MySQL or Postgres DB running on localhost then you may only need to populate the database.  If it was MySQL or Postgres on a remotely accessible database then you likely have nothing to do.
 
 If you are using an sqlite database then I recommend you create example.com/DB and copy your sqlite database into this directory.  If you are folling along with the tutorial then you would change the DATABASE NAME section in your settings.py file to  /home/anouman/example.com/DB/{name_of_your_db}
     
