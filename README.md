@@ -134,7 +134,7 @@ You can force nginx to do a reload with:
 
     site reload
 
-These site management commands are specific to the site curently being worked on.  If you install another django project anouman will gladly set it up for you and ensure that nginx properly directs traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed with anouman is as simple as switching wrapped virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
+These site management commands are specific to the site curently being worked on.  If you install another django project anouman will gladly set it up for you and ensure that nginx properly directs traffic to the appropriate django back end and it's all managed with virtualenv and virtualenvwrapper.  To switch between sites deployed with Anouman is as simple as switching wrapped virtualenv's.  For ex:  workon example.com, workon site2.com, etc.
 
 **Step 6:**  Adjust client /etc/hosts file to simulate DNS for your web site.  First make sure your site is running (see step 7).  Next, add the following line to your /etc/hosts
 
