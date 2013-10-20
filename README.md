@@ -23,17 +23,19 @@ Virtual Machine Creation and Provisioning
     anouman --vm test1
 
 This command uses vagrant to create and spin up a virtual machine in a directory called test1.
-As part of the process it created a user/pass *anouman/anouman* with sudo privileges.  Login with:
+As part of this process anouman created an account with sudo privileges.  Login with user/password=*anouman/anouman*:
 
     ssh anouman@192.168.100.100  # Password *anouman*
 
 **Step 2:** Final provisioning
 
+If you are using sqlite as your database you may skip this step.
+
 If you are using MySQL or Postgres you will need to install them now.  For mysql
 
     sudo apt-get install mysql-server
 
-You will then need to login to the mysql server and create the appropriate database for your django project.
+You will then need to login to the mysql server and create/setup the appropriate database for your django project.
 
 If you are using [Postgres](http://www.postgresql.org/download/linux/ubuntu/) you will need to follow a similar [protocal](http://www.postgresql.org/download/linux/ubuntu/) to setup your Postgres database.
 
