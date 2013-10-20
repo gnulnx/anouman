@@ -15,3 +15,7 @@
     Features:
         -Better support for multisite installs 
         -Finished --vm option for auto creation of virtual machines
+
+0.0.5.1
+    Bugs:
+        -Fixed documentation errors
