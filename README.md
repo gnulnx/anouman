@@ -20,7 +20,7 @@ Virtual Machine Creation and Provisioning
     anouman --vm test1
 
 This command uses vagrant to create and spin up a virtual machine in a directory called test1.
-As part of the process it created a user *anouman* with sudo privileges and password *anouman*.  To login use:
+As part of the process it created a user/pass *anouman/anouman* with sudo privileges.  Login with:
 
     ssh anouman@192.168.100.100  # Password *anouman*
 
@@ -45,23 +45,33 @@ Anouman Setup and Deployment Tutorial
 ### Section 1:  Packaging
 
 This section will assume you have a django project called *example*.   Most likely your project is not named *example*
-so to follow along with your project simple replace *example* with your project's name.
+so follow along with your project by simply replacing *example* with your project's name.
 
 Before you begin make sure to open a new Terminal window.
 
-**Step 1:** Switch to the python virtualenv you use for development.
-        You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  
-        If not Anouman should still work with your python system packages.
+**Step 1:** Install anouman
+
+Switch to the python virtualenv you use for development.
+You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  
+*If not Anouman should still work with your python system packages.*
 
         source /path/to/your/virtualenv/activate
+
+Now install Anouman
+
         pip install anouman
 
-**Step 2:** Update your django settings file to reflect the Virtual Machine you are about to deploy it on.
+**Step 2:** Update DATABASE settings
 
-If you are using sqlite as your backend database you can ignore this section.
+If you are using sqlite you will need to copy your database file to the server
+and then update the NAME section of the DATABASE dictionary in settings.py.
+*A future version will take care of copying your database to a default location and updating your setting file*
 
-If you are using MySQL or Postgres with your project you will likely need to update your DATABASE settings in your settings.py file.
-Look for the DATABASE Section and update change the HOST line to:
+
+If your are using a MySQL or Postgres database on a remote server then you may have nothing else to do.
+If you SQL server is located on the same machine then you will need
+If you are using MySQL or Postgres with your project you will likely need to update the HOST section of the DATABASE dictionary in settings.py.
+Look for the DATABASE section and change the HOST line to:
     
     'HOST': '192.168.100.100'
     
@@ -72,7 +82,7 @@ Don't worry your original settings.py file on your local machine will remain unt
         server.  Start by navigating to the directory containing your django project.
         This is the directory you originally ran *django-admin.py startproject* from.
         For instance if you ran *django-admin startprojet example* from your home directory then you 
-        want to be in your home directory when you issue the folowing command:
+        want to be in your home directory when you issue the following command:
 
         anouman --django-project=example --domainname=example.com
 
