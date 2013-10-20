@@ -88,7 +88,7 @@ Return to the terminal where you are logged into your vm or relogin with:
 
         ssh anouman@192.168.100.100
 
-**Step 2:** Install anouman into the servers system python repository.  
+**Step 2:** Install Anouman into the servers system python repository.  
 
         sudo pip install anouman
 
