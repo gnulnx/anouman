@@ -102,7 +102,7 @@ The first time you run Anouman it will install itself and in the process create 
 
 Follow the intructions when this command finishes to update/source your .bash_profile.  You should now have your web site deployed behind nginx/gunicorn.  Your projects system packages are now located in the default virtualenv wrapper location */home/anouman/.virtualenvs/example.com*.  If you are unfamiliar with the  [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/) I highly recommend taking a little time to become familiar with it.
 
-Anouman has also modified your STATIC_ROOT and MEDIA_ROOT variables to point to *example.com/static* and *example.com/media* respectively.   In addition ./manage.py collectstatic has been run as well.     
+Anouman has also modified your STATIC_ROOT and MEDIA_ROOT variables in settings.py to point to *example.com/static* and *example.com/media* respectively.  The goal here is to have each site completely contained in a single directory with nginx logs, gunicorn logs, static files, and your source code.  *This makes it trivial to move your site to a new server using anouman.*         
 
 Your site should now be running behind nginx/gunicon with static files properly being servered, however you still have a few steps remaining before everything will work correctly.
     
