@@ -23,7 +23,7 @@ Virtual Machine Creation and Provisioning
     anouman --vm test1
 
 This command uses vagrant to create and spin up a virtual machine in a directory called test1.
-As part of this process anouman created an account with sudo privileges.  Login with user/password=*anouman/anouman*:
+As part of this process anouman created an account with sudo privileges.  Go ahead and login with user/password=*anouman/anouman*:
 
     ssh anouman@192.168.100.100  # Password *anouman*
 
