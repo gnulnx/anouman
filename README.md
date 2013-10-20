@@ -31,7 +31,7 @@ As part of this process anouman created an account with sudo privileges.  Go ahe
 
 If you are using sqlite as your database you may skip this step.
 
-If you are using MySQL or Postgres you will need to install them now.  For mysql
+If you are using MySQL or Postgres you will need to install them now.  For MySQL
 
     sudo apt-get install mysql-server
 
