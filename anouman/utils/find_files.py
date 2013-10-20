@@ -167,17 +167,3 @@ def change_settings(settings_file, pattern, value):
 
     return True
 
-def set_static_roots(args):
-    """
-        We need to change the STATIC_ROOT and MEDIA_ROOT variables
-    """
-    [settings_path, SETTINGS] = get_settings(args)
-    sys.path.append(os.path.dirname(settings_path))
-    import settings
-    
-    change_settings(settings_path, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
-    change_settings(settings_path, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
-
-    reload(settings)
-
-    return [settings.STATIC_ROOT, settings.MEDIA_ROOT]
