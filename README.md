@@ -100,17 +100,21 @@ The first time you run Anouman it will install itself and in the process create 
 
         anouman --deploy example.com.tar.gz
 
-Follow the intructions when this command finishes to update/source your .bash_profile.  You should now have your web site deployed behind nginx/gunicorn.  However you will still need to finish the remaining steps to get your site up and running correctly.
+Follow the intructions when this command finishes to update/source your .bash_profile.  You should now have your web site deployed behind nginx/gunicorn.  Your projects system packages are now located in the default virtualenv wrapper location */home/anouman/.virtualenvs/example.com*.  If you are unfamiliar with the  [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/) I highly recommend taking a little time to become familiar with it.
+
+Anouman has also modified your STATIC_ROOT and MEDIA_ROOT variables to point to *example.com/static* and *example.com/media* respectively.   In addition ./manage.py collectstatic has been run as well.     
+
+Your site should now be running behind nginx/gunicon with static files properly being servered, however you still have a few steps remaining before everything will work correctly.
     
 **STep 4:** Ensure your database settings are correct.
 
 Your site should now be deployed into a directory called */home/anouman/example.com*.  Your original django project can be found in *example.com/src*.  Please update the DATABASE section of settings.py so that it points to your database. If it was a MySQL or Postgres DB running on localhost then you may only need to populate the database.  If it was MySQL or Postgres on a remotely accessible database then you likely have nothing to do.
 
-If you are using an sqlite database then I recommend you create example.com/DB and copy your sqlite database into this directory.  If you are folling along with the tutorial then you would change the DATABASE NAME section in your settings.py file to  /home/anouman/example.com/DB/{name_of_your_db}
+If you are using an sqlite database then I recommend you create example.com/DB and copy your sqlite database into this directory.  If you are following along with the tutorial then you would change the DATABASE NAME section in your settings.py file to  /home/anouman/example.com/DB/{name_of_your_db}
     
 **Step 5**  Explore Anouman Shell Commands
 
-Assuming you updated and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
+Assuming you updated and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script which is locate in .  For instance to check the status of gunicorn/nginx type:
 
     site status
     
@@ -136,7 +140,7 @@ These site management commands are specific to the site curently being worked on
 
     192.168.100.100   www.example.com   example.com
     
-If you setup another site, say site2.com on the same server then you would add another line to /etc/hsots
+If you setup another site, say site2.com, on the same server then you would add another line to /etc/hsots
 
     192.168.100.100 www.site2.com   site1.com
     
