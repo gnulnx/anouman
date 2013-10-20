@@ -126,7 +126,7 @@ These site management commands are specific to the site curently being worked on
 
 **Step 6:**  Adjust client */etc/hosts* file to simulate DNS for your web site.  
 
-First make sure your site is running (see step 7).  Next, add the following line to your */etc/hosts*.
+First make sure your site is running (see step 5).  Next, add the following line to your */etc/hosts*.
 
     192.168.100.100   www.example.com   example.com
     
