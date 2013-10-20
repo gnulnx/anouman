@@ -10,6 +10,9 @@ The easiest way to become familiar with Anouman is to dive in and use it by foll
 Install Anouman
 --------------
 
+Switch to the python virtualenv you use for development.  You are using [virtualenv](http://www.virtualenv.org/en/latest/) for python development right?  If not Anouman should still work with your python system packages.
+
+    source /path/to/your/virtualenv/activate
     pip install anouman
 
 Virtual Machine Creation and Provisioning
@@ -61,53 +64,45 @@ Now install Anouman
 
         pip install anouman
 
-**Step 2:** Next you will create an anouman package that will be deployable on an anouman loaded
-        server.  Start by navigating to the directory containing your django project.
-        This is the directory you originally ran *django-admin.py startproject* from.
-        For instance if you ran *django-admin startprojet example* from your home directory then you 
-        want to be in your home directory when you issue the following command:
+**Step 2:** Create Anouman Package
+
+In this step you will use anouman to create a deployable package from your django project.  Start by navigating to the directory containing your django project. This is the directory you originally ran *django-admin.py startproject* from. For instance if you ran *django-admin startprojet example* from your home directory then you want to be in your home directory when you issue the following command:
 
         anouman --django-project=example --domainname=example.com
 
-Behind the scenes your django project was copied into a directory named
-example.com/src. Inside this directory is another file which contains a listing of python packages you
-are using for your django projects.  This was determiend from the output of "pip freeze" 
+Behind the scenes your django project was copied into a directory named example.com/src. Inside this directory is another file which contains a listing of python packages you are using for your django projects.  This was determiend from the output of "pip freeze" 
 
 ### Section2:  Deploying
 
-**Step 1:** Scp your project to the virtual machine we created above and then log in.
+**Step 1:** Copy files to server
+
+Scp your project to the virtual machine we created above and then log in.
 
         scp example.com.tar.gz  anouman@192.168.100.100:/home/anouman
         
+If you are using sqlite and it is not contained in your project directory then you will now need to copy it to the VM as well. *A future version will take care of copying your database to a default location and updating your setting file*
+
 Return to the terminal where you are logged into your vm or relogin with:
 
         ssh anouman@192.168.100.100
 
-**Step 2:** Copy your Database
-
-If you are using sqlite and it is not contained in your project directory then you will now need to copy it to the VM as well. *A future version will take care of copying your database to a default location and updating your setting file*
-
-If you are using sqlite you will need to copy your database file to the server
-and then update the NAME section of the DATABASE dictionary in settings.py.
-*A future version will take care of copying your database to a default location and updating your setting file*
-
-**Step 3:** Install anouman into the servers system python repository.
+**Step 2:** Install anouman into the servers system python repository.
 
         sudo pip install anouman
 
-**Step 4:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself and in the process create a wrapped '*anouman*' virtualenv as well as a wrapped '*example.com*' virtualenv.  For the sake of this tutorial we will do both setup and deployment with one command.
+**Step 3:** Setup  anouman and deploy your new project.   The first time you run anouman, with or without arguments, it will install itself and in the process create a wrapped '*anouman*' virtualenv as well as a wrapped '*example.com*' virtualenv.  For the sake of this tutorial we will do both setup and deployment with one command.
 
         anouman --deploy example.com.tar.gz
 
 Follow the intructions when this command finishes to update/source your .bash_profile.  You should now have your web site deployed behind NGINX/gunicorn.  
     
-**STep 5:** Ensure you database settings are correct.
+**STep 4:** Ensure you database settings are correct.
 
 Your project should now be locate in example.com/src.  Please update the DATABASE section to point to your database. If it was a MySQL or Postgres running on localhost then you may only need to populate the database.  If it was MySQL or Postgres on a remotly accessible database then you likely have nothing to do.
 
 If you are using an sqlite database then I recommend you create example.com/DB and copy your sqlite database into this directory.  If you are folling along with the tutorial then you would change the NAME section to  /home/anouman/example.com/DB/{name_of_your_db}
     
-**Step 6**  Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
+**Step 5**  Assuming you update and sourced .bash_profile at the end of the deployment step you will now have a few shell commands that were appended to the end of your sites virtualenv activate script. For instance to check the status of gunicorn/nginx type:
 
     site status
     
