@@ -55,8 +55,8 @@ class Deploy():
         # absolute path to the gunicorn_start.sh script
         self.GUNICORN_START="%s/gunicorn_start"%(self.VIRTBIN)
 
-        # SETTINGS project path:  ex  project.settings
         # settings absolute path to the settings.py
+        # SETTINGS project path:  ex  project.settings
         [self.settings, self.SETTINGS] = get_settings(args)    
 
         # absolute path to the project wsgi.py
@@ -69,12 +69,27 @@ class Deploy():
         if not os.path.isdir(self.LOG_DIR):
             os.makedirs(self.LOG_DIR)
 
+        # Copy the users settings file to anouman_settings.py
+        self.create_anouman_settings(args)
 
         # Update Settings File
         self.update_settings_file(args)
        
         # Now deploy the django project 
         self.deploy_django_project(args)
+
+
+    def create_anouman_settings(self, args):
+        """
+            A copy of the settings file is made so anouman can make modifications to it without
+            having to change the users source code.
+
+            Assigns the path to anouman_settings.py to the self.anouman_settings
+        """
+        self.anouman_settings = "%s/anouman_settings.py" % ( os.path.dirname(self.settings) )
+        shutil.copyfile(self.settings, self.anouman_settings)
+
+        self.ANOUMAN_SETTINGS = SETTINGS.split(".")[:-1] + "anouman_settings.py"
 
     def update_settings_file(self, args):
         """
@@ -83,31 +98,37 @@ class Deploy():
             Anouman bundle and not have --deploy overwrite them.
         
             We also need to change DEBUG to False for production use
+
+            You should call create_anouman_settings() before calling this function
         """
 
         # First import the settings file
-        [settings_path, SETTINGS] = get_settings(args)
-        sys.path.append(os.path.dirname(settings_path))
-        import settings
+        #[settings_path, SETTINGS] = get_settings(args)
+        #sys.path.append(os.path.dirname(settings_path))
+        #import settings
+
+        sys.path.append(os.path.dirname( self.anouman_settings )
+        import anouman_settings
 
         # Then modify settings
-        change_settings(settings_path, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
-        change_settings(settings_path, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
+        change_settings(self.anouman_settings, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
+        change_settings(self.anouman_settings, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
 
         # Set Debug to False and update ALLOWED_HOSTS to match domain name
-        change_settings(settings_path, r'DEBUG', False )
-        change_settings(settings_path, r'ALLOWED_HOSTS', ["%s"%(args.domainname)] )
+        change_settings(self.anouman_settings, r'DEBUG', False )
+        change_settings(self.anouman_settings, r'ALLOWED_HOSTS', ["%s"%(args.domainname)] )
 
         # Now reload the settings file
-        reload(settings)
+        reload(anouman_settings)
 
         # And set some class variables
-        self.STATIC_ROOT = settings.STATIC_ROOT
-        self.MEDIA_ROOT = settings.MEDIA_ROOT
+        self.STATIC_ROOT = anouman_settings.STATIC_ROOT
+        self.MEDIA_ROOT = anouman_settings.MEDIA_ROOT
 
     def deploy_django_project(self, args):
         """
             This is the primary deploy method
+
         """
 
         # Create a virtualenv
@@ -222,7 +243,8 @@ class Deploy():
             'GROUP':getpass.getuser(),
             'GUNICORN':"%s/gunicorn"%(self.VIRTBIN),
             'DJANGODIR':DJANGODIR,
-            'DJANGO_SETTINGS_MODULE':self.SETTINGS,
+            #'DJANGO_SETTINGS_MODULE':self.SETTINGS,
+            'DJANGO_SETTINGS_MODULE':self.ANOUMAN_SETTINGS,
             'DJANGO_WSGI_MODULE':self.WSGI,
             'ACCESS_LOG':"%s/gunicorn-access.log"%(self.LOG_DIR),
             'ERROR_LOG':"%s/gunicorn-error.log"%(self.LOG_DIR),
