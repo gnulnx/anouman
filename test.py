@@ -5,9 +5,9 @@ import subprocess
 import paramiko
 import shutil
 from anouman.templates import (
-    vagrant,
-    vagrant_bootstrap,
-    clean
+    VagrantTemplate,
+    VagrantBootstrapTemplate,
+    CleanTemplate
 )
 
 for line in open("setup.py"):
@@ -31,8 +31,9 @@ class TestBuild(unittest.TestCase):
             There were a lot of directory changes going on.
             It was easier to alway's return to a common root directory
         """
-        # return to the rool level directory
-        os.chdir(os.path.dirname(__file__))
+        testfile_abspath = os.path.abspath(__file__)
+        path, filename = os.path.split(testfile_abspath)
+        os.chdir(path)
 
     def test_1_remove_dist(self):
         """Make sure the build directory is gone"""
@@ -44,10 +45,18 @@ class TestBuild(unittest.TestCase):
         )
     
     def test_2_uninstall_anouman(self):
-        subprocess.call(['pip', '-q', 'uninstall', 'anouman'])
+        yes = subprocess.Popen(('/usr/bin/yes'), stdout=subprocess.PIPE)
+        head = subprocess.Popen(('head', '-n', '10'), stdin=yes.stdout, stdout=subprocess.PIPE)
+
+        try:
+            pip = subprocess.check_output(('pip', '-q', 'uninstall', 'anouman'), stdin=head.stdout)
+        except subprocess.CalledProcessError:
+            # anouman not installed.  Just skip to next check
+            pass            
+
         try:
             anouman = subprocess.check_output(['which', 'anouman'])
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             anouman = False
 
         self.assertFalse(anouman)
@@ -94,7 +103,7 @@ class TestBuild(unittest.TestCase):
         subprocess.call(['tar', 'xvfz', 'site1.com.tar.gz']) 
         dir_contents = os.listdir("site1.com")
         self.assertEqual(
-            ['pip_packages.txt', 'src'], 
+            ['bin', 'etc', 'pip_packages.txt', 'src'],
             dir_contents
         )
 
@@ -119,7 +128,6 @@ class TestVagrant(unittest.TestCase):
             There were a lot of directory changes going on.
             It was easier to alway's return to a common root directory
         """
-        # return to the rool level directory
         try:
             os.chdir(os.path.dirname(__file__))
         except:
