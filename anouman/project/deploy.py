@@ -89,7 +89,7 @@ class Deploy():
         self.anouman_settings = "%s/anouman_settings.py" % ( os.path.dirname(self.settings) )
         shutil.copyfile(self.settings, self.anouman_settings)
 
-        self.ANOUMAN_SETTINGS = SETTINGS.split(".")[:-1] + "anouman_settings.py"
+        self.ANOUMAN_SETTINGS = self.SETTINGS.replace(".settings", ".anouman_settings")
 
     def update_settings_file(self, args):
         """
@@ -102,14 +102,6 @@ class Deploy():
             You should call create_anouman_settings() before calling this function
         """
 
-        # First import the settings file
-        #[settings_path, SETTINGS] = get_settings(args)
-        #sys.path.append(os.path.dirname(settings_path))
-        #import settings
-
-        sys.path.append(os.path.dirname( self.anouman_settings )
-        import anouman_settings
-
         # Then modify settings
         change_settings(self.anouman_settings, r'MEDIA_ROOT', "%s/"%(os.path.abspath("%s/media/" %(args.domainname))) )
         change_settings(self.anouman_settings, r'STATIC_ROOT', "%s/"%(os.path.abspath("%s/static/" %(args.domainname))) )
@@ -118,8 +110,12 @@ class Deploy():
         change_settings(self.anouman_settings, r'DEBUG', False )
         change_settings(self.anouman_settings, r'ALLOWED_HOSTS', ["%s"%(args.domainname)] )
 
-        # Now reload the settings file
-        reload(anouman_settings)
+        # Now reload the anouman_settings file
+        sys.path.append( os.path.dirname( self.anouman_settings ))
+        import anouman_settings
+        if not anouman_settings.STATIC_ROOT:        
+            sys.stdout.flush()
+            reload(anouman_settings) 
 
         # And set some class variables
         self.STATIC_ROOT = anouman_settings.STATIC_ROOT
@@ -151,8 +147,9 @@ class Deploy():
 
         # Run collectstatic command
         # TODO Figure out why you weren't able to do this with subprocess.call([])
-        os.system( '''/bin/echo "yes" | %s %s collectstatic'''%(self.PYTHON, self.MANAGE) )
-
+        os.makedirs(self.STATIC_ROOT)
+        os.makedirs(self.MEDIA_ROOT) 
+        os.system( '''/bin/echo "yes" | %s %s collectstatic --settings=%s'''%(self.PYTHON, self.MANAGE, self.ANOUMAN_SETTINGS) )
 
         print "#######################################################################"
         print "                                                                       "    

@@ -45,7 +45,7 @@ def get_args():
         default='>=1.5, <=1.6',
     )
     
-    parser.add_argument('--django-project',
+    parser.add_argument('--django-project', 
         help='Create deployment for django project.  (Assumes one settings file and one wsgi file)',
         dest='django_project',
         default=False,
