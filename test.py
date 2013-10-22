@@ -22,7 +22,6 @@ try: VERSION
 except Exception as e:
     raise Exception("VERSION NUMBER NOT FOUND")
 
-VM1="10.0.1.21"
 
 class TestBuild(unittest.TestCase):
 
@@ -47,6 +46,9 @@ class TestBuild(unittest.TestCase):
     def test_2_uninstall_anouman(self):
         yes = subprocess.Popen(('/usr/bin/yes'), stdout=subprocess.PIPE)
         head = subprocess.Popen(('head', '-n', '10'), stdin=yes.stdout, stdout=subprocess.PIPE)
+
+        # must explicitly kill yes command as it runs indefinitely
+        yes.kill() 
 
         try:
             pip = subprocess.check_output(('pip', '-q', 'uninstall', 'anouman'), stdin=head.stdout)
@@ -122,16 +124,16 @@ class TestBuild(unittest.TestCase):
 
 
 class TestVagrant(unittest.TestCase):
-    
+    VM1="10.0.1.21"
+
     def setUp(self):
         """
             There were a lot of directory changes going on.
             It was easier to alway's return to a common root directory
         """
-        try:
-            os.chdir(os.path.dirname(__file__))
-        except:
-            os.chdir("/Users/jfurr/anouman/")
+        testfile_abspath = os.path.abspath(__file__)
+        path, filename = os.path.split(testfile_abspath)
+        os.chdir(path)
 
 
     def connect_to_s1(self, transport=False):
@@ -143,7 +145,7 @@ class TestVagrant(unittest.TestCase):
         client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.connect(
-            hostname=VM1,
+            hostname=self.VM1,
             username='anouman',
             password='anouman',
             timeout=5
@@ -158,7 +160,7 @@ class TestVagrant(unittest.TestCase):
         """
         #TODO: Remove the hard coded scp call.  In fact why not move this
         # out of the test suite and make it a general purpose call.
-        transport = paramiko.Transport((VM1, 22))
+        transport = paramiko.Transport((self.VM1, 22))
         transport.connect(
             username='anouman', 
             password='anouman'
@@ -190,33 +192,36 @@ class TestVagrant(unittest.TestCase):
         print "test_1_create_new_vagrant_box"
         try:
             shutil.rmtree("test/vm/site3")
-            print "REMOVED"
         except OSError as e:
-            print "EXCEPTION: ", e
             pass
 
         os.mkdir("test/vm/site3")
         os.chdir("test/vm/site3")
-        
-        vagrant.save(path="./Vagrantfile", context={
+
+        VagrantTemplate.save(path="./Vagrantfile", context={
             'NAME':'site3',
             'PUBLIC':True
         })
-        
-        vagrant_bootstrap.save(path="./bootstrap.sh", context={
+
+        # Write teh bootstrap file
+        VagrantBootstrapTemplate.save(path="./bootstrap.sh", context={
             'NGINX':True,
             'MYSQL':True,
         })
-
-        clean.save(path="./clean.sh", context={
+        
+        CleanTemplate.save(path="./clean.sh", context={
             'DOMAINNAME':'site3.com'
         })
 
-        print "YOU NEED TO ACTUALLY CHECK SOMETHIGN FOR THIS TO BE  ATEST"
+        # Make sure the files are there.  
+        # Not sure I want to start testing contents yet as they could still be pretty dynamic
+        self.assertTrue( os.path.isfile("Vagrantfile") )
+        self.assertTrue( os.path.isfile("bootstrap.sh") )
+        self.assertTrue( os.path.isfile("clean.sh") )
 
     def test_2_bring_vagrant_up(self):
         base_dir = os.path.dirname(__file__)
-        os.chdir(os.path.join(base_dir, "test/vm/site1"))
+        os.chdir(os.path.join(base_dir, "test/vm/site3"))
 
         """
             Frist we try to connect to see if the vm is already up.
