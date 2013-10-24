@@ -24,5 +24,6 @@
     Updates:
     - No longer modify user settings.py file.  A seperate anouman_settings.py is created for the project
     - Set DEBUG=False
-    - Set ALLOWED_HOSTS=['domainname']
+    - Set ALLOWED_HOSTS=['domainname'] (even if ALLOWED_HOSTS is not currently present..ie older version)
     - Added --gunicorn-log-level command line option to set gunicorn log level.  Defaults to 'info'
+    
