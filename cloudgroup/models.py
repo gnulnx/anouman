@@ -24,5 +24,10 @@ class Machine(models.Model):
 
 
 class CloudGroup(models.Model):
+    """
+    Basically a firewall or security group.
+    """
     name = models.CharField(max_length=32, blank=False, null=False)
 
+    def __str__(self):
+        return self.name

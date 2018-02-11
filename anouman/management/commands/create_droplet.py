@@ -22,16 +22,16 @@ class Command(BaseCommand):
         parser.add_argument("--size_slug", help="The droplet size", default="512mb")
         parser.add_argument("--backups", help="Enable backups", type=bool, default=False)
         parser.add_argument("--image", help="The digital ocean image type", default="ubuntu-16-04-x64")
-        parser.add_argument("--monitoring", help="Enable/Disable monitoring.", type=bool, default=False)
-        parser.add_argument("--private", help="Enable private networking", type=bool, default=False)
+        parser.add_argument("--monitoring", help="Enable/Disable monitoring.", action="store_true")
+        parser.add_argument("--private", help="Enable private networking", action="store_true")
 
 
     def create_droplet(self, options, **kwargs):
         if not options["name"]:
             print(Fore.RED + "--name is a required argument")
             sys.exit(1)
-        # Create Keys
-        keys = self.get_keys()
+
+        keys = get_keys(settings.DO_TOKEN)
         if not keys:
             print(Fore.RED + "You need to setup ssh keys in your digital ocean account")
             sys.exit(1)
@@ -78,27 +78,28 @@ class Command(BaseCommand):
         manager = do.Manager(token=settings.DO_TOKEN)
         droplet = manager.get_droplet(droplet.id)
 
-        cmd = '''ssh -o "StrictHostKeyChecking no" -A root@%s "echo hello"''' % droplet.ip_address
+        machine = Machine(
+            name=options["name"],
+            droplet_id=droplet.id,
+        )
+        machine.save()
+
+        cmd = '''ssh -o "StrictHostKeyChecking no" -A root@%s "echo ping -> pong"''' % droplet.ip_address
         start = time()
         while 1:
             try:
                 subprocess.check_call([cmd], shell=True)
                 break
             except subprocess.CalledProcessError:
-                time.sleep(1)
+                sleep(1)
 
             elapsed = start - time()
             if elapsed > MAXTIME:
                 print(FG.Red + " - Unable to login to droplet with ssh keys")
                 sys.exit(1)
         
-        machine = Machine(
-            name=options["name"],
-            droplet_id=droplet.id,
-            ip=droplet.ip_address,
-            private_ip=droplet.private_ip_address,
-        )
-
+        machine.ip=droplet.ip_address
+        machine.private_ip=droplet.private_ip_address
         machine.save()
         print(Fore.GREEN + " - Your Droplet is Available at: %s" % machine.ip)
 

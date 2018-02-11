@@ -10,19 +10,26 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 from anouman.utils import get_keys
-from cloudgroup.models import Machine
+from cloudgroup.models import Machine, CloudGroup
 
 
 class Command(BaseCommand):
     help = 'Create a digitial ocean droplet'
 
     def handle(self, *args, **options):
-        machines = Machine.objects.all()
+        groups = CloudGroup.objects.all()
+        print(Fore.MAGENTA + "Cloud Groups")
+        print(Fore.YELLOW + "   Name")
+        for g in groups:
+            print(Fore.GREEN + " - %s" % g.name)
 
-        print(Fore.YELLOW + "%-20s %-20s %-20s %-20s" % ("Name", "IP", "Droplet ID", "Cloud Group"))
+
+        machines = Machine.objects.all()
+        print(Fore.MAGENTA + "Droplets")
+        print(Fore.YELLOW + "   %-20s %-20s %-20s %-20s" % ("Name", "IP", "Droplet ID", "Cloud Group"))
         for m in machines:
             try:
                 do.Droplet.get_object(settings.DO_TOKEN, m.droplet_id)
-                print(Fore.GREEN + "%-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, m.group))
+                print(Fore.GREEN + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, m.group))
             except do.baseapi.NotFoundError:
-                print(Fore.RED + "%-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, m.group))
+                print(Fore.RED + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, m.group))
