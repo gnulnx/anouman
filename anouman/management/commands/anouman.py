@@ -1,4 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
+import digitalocean as do
+
 
 class Command(BaseCommand):
     help = 'Manage your infrastructure'
@@ -16,7 +19,7 @@ class Command(BaseCommand):
     def get_keys(self):
         for tries in range(11):
             try:
-                manager = do.Manager(token=TOKEN)
+                manager = do.Manager(token=settings.DO_TOKEN)
                 return manager.get_all_sshkeys()
             except do.baseapi.DataReadError:
                 if tries > 10: raise
@@ -25,7 +28,8 @@ class Command(BaseCommand):
     def create_droplet(self, **kwargs):
         print("CREATING DROPLET")
         # Create Keys
-        #keys = self.get_keys()
+        keys = self.get_keys()
+        print("keys: ", keys)
 
         # Create Droplet
         """
@@ -45,3 +49,4 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         print(options)
+        self.create_droplet()
