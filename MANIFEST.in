@@ -1,5 +1,0 @@
-include *.txt
-include *.md
-include *.rst
-
-recursive-include anouman *.py  *
