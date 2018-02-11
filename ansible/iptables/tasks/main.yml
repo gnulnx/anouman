@@ -1,0 +1,8 @@
+- name: "Copy iptables rules to load balancer"
+  template: src=cloudgroup_iptables.j2 dest=/etc/iptables_rules owner=root group=root
+
+- name: "Flush the current iptables"
+  shell: /sbin/iptables -F
+
+- name: "Install the new iptables"
+  shell:  /sbin/iptables-restore < /etc/iptables_rules
