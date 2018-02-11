@@ -19,5 +19,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         machines = Machine.objects.all()
 
+        print(Fore.YELLOW + "%-20s %-20s %-20s %-20s" % ("Name", "IP", "Droplet ID", "Cloud Group"))
         for m in machines:
-            print(FG.Blue + "%-20s %-20s" % (m.name, m.ip))
+            try:
+                do.Droplet.get_object(settings.DO_TOKEN, m.droplet_id)
+                print(Fore.GREEN + "%-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, m.group))
+            except do.baseapi.NotFoundError:
+                print(Fore.RED + "%-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, m.group))
