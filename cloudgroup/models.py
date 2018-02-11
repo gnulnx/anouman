@@ -19,6 +19,7 @@ class Machine(models.Model):
     name = models.CharField(max_length=32, blank=False, null=False)
     droplet_id = models.PositiveSmallIntegerField(blank=True, null=True)
     ip = models.GenericIPAddressField(blank=True, null=True)
+    private_ip = models.GenericIPAddressField(blank=True, null=True)
     group = models.ForeignKey('CloudGroup', on_delete=models.CASCADE, blank=True, null=True)
 
 
