@@ -7,13 +7,29 @@ import json
 from django.db import models
 
 
-class WhiteList(models.Model):
+class SSHKey(models.Model):
+    """
+    A model to hold your ssh key information.
+    These keys are often used during user provision.
+    CUrrently digitial ocean will provision the servers with the users keys.
+    """
+    name = models.CharField(max_length=32)
+    public = models.TextField()
+    private = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+
+class IPAddress(models.Model):
     """
     This model holds a list of all IP addresses that are allowed to ssh into any CloudGroup Machine
     """
+    name = models.CharField(max_length=32, blank=True, null=True)
     ip = models.GenericIPAddressField(blank=False, null=False, unique=True)
-    group = models.ManyToManyField('CloudGroup')
 
+    def __str__(self):
+        return "%s-%s" % (self.name, self.ip)
 
 class Machine(models.Model):
     """
@@ -23,7 +39,9 @@ class Machine(models.Model):
     droplet_id = models.PositiveSmallIntegerField(blank=True, null=True)
     ip = models.GenericIPAddressField(blank=True, null=True)
     private_ip = models.GenericIPAddressField(blank=True, null=True)
-    group = models.ForeignKey('CloudGroup', on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class CloudGroup(models.Model):
@@ -31,6 +49,9 @@ class CloudGroup(models.Model):
     Basically a firewall or security group.
     """
     name = models.CharField(max_length=32, blank=False, null=False)
+    sshkeys = models.ManyToManyField('SSHKey')
+    whitelist = models.ManyToManyField('IPAddress')
+    machines = models.ManyToManyField('Machine')
 
     def __str__(self):
         return self.name

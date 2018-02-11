@@ -18,18 +18,21 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         groups = CloudGroup.objects.all()
-        print(Fore.MAGENTA + "Cloud Groups")
-        print(Fore.YELLOW + "   Name")
         for g in groups:
-            print(Fore.GREEN + " - %s" % g.name)
+            print(Fore.MAGENTA + "Cloud Group: " + Fore.CYAN + g.name)
+            print(Fore.YELLOW + " - %-20s %-20s %-20s %-20s" % ("Name", "IP", "Droplet ID", "Cloud Group"))
+            for m in g.machines.all():
+                try:
+                    do.Droplet.get_object(settings.DO_TOKEN, m.droplet_id)
+                    print(Fore.GREEN + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, g))
+                except do.baseapi.NotFoundError:
+                    print(Fore.RED + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, g))
 
 
-        machines = Machine.objects.all()
-        print(Fore.MAGENTA + "Droplets")
-        print(Fore.YELLOW + "   %-20s %-20s %-20s %-20s" % ("Name", "IP", "Droplet ID", "Cloud Group"))
-        for m in machines:
+        print(Fore.MAGENTA + "Rouge Machines")
+        for m in Machine.objects.filter(cloudgroup__isnull=True):
             try:
                 do.Droplet.get_object(settings.DO_TOKEN, m.droplet_id)
-                print(Fore.GREEN + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, m.group))
+                print(Fore.GREEN + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, g))
             except do.baseapi.NotFoundError:
-                print(Fore.RED + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, m.group))
+                print(Fore.RED + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, g))

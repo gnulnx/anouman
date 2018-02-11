@@ -1,4 +1,4 @@
-Django==1.11.10
+Django==2.0.2
 django-extensions==1.9.9
 python-digitalocean==1.13.2
 colorama==0.3.9
