@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import ipgetter
 from six.moves import input
+import json
 
 from django.db import models
 
@@ -62,11 +63,21 @@ class CloudGroup(models.Model):
         }
         return context
 
-    def provision(self, hosts_file):
-        extra_vars = json.dumps(instance.get_context_data())
-        print(extra_vars)
+    def hosts_file(self):
+        host_name = "%s_hosts" % self.name
+
+        with open(host_name, "w") as f:
+            f.write("[%s]\n" % self.name)
+            for ip in Machine.objects.filter(group=self).values_list('ip', flat=True):
+                f.write("%s\n" % ip)
+
+        return host_name
+
+    def provision(self):
+        hosts_file = self.hosts_file()
+        extra_vars = json.dumps(self.get_context_data())
         playbooks = (
-            '''ansible-playbook  -s -u root ansible/apt_cleanup.yml -i %s --extra-vars='%s' ''' % (hosts_file, extra_vars),
+            '''ansible-playbook  -s -u root ansible/iptables.yml -i %s --extra-vars='%s' ''' % (hosts_file, extra_vars),
         )
 
         print("Made it")
