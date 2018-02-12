@@ -3,21 +3,24 @@
   hosts: all
 
   pre_tasks:
-  - name: install python 2 for ansible
-    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
-    retries: 10
-    delay: 2
-    register: result
-    until: result|succeeded
+      - name: "Install iptables"
+        shell: sudo apt-get install -y iptables
 
-  - name: report error
-    fail:
-      msg: 'Unable to download {{result.url}}: {{result.response|default(result.msg)}}'
-    when: not result|succeeded
-
-  - name: install python-pip
-    raw:  sudo apt-get install -y python-pip
-
+  #pre_tasks:
+  #  - name: install python 2 for ansible
+  #    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+  #    retries: 10
+  #    delay: 2
+  #    register: result
+  #    until: result|succeeded
+  #
+  #  - name: report error
+  #    fail:
+  #      msg: 'Unable to download {{result.url}}: {{result.response|default(result.msg)}}'
+  #    when: not result|succeeded
+  #
+  #  - name: install python-pip
+  #    raw:  sudo apt-get install -y python-pip
+  
   roles:
-    - set_facts
     - iptables

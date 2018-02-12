@@ -3,3 +3,4 @@ django-extensions==1.9.9
 python-digitalocean==1.13.2
 colorama==0.3.9
 ipgetter==0.7
+ansible==2.4.3.0

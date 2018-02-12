@@ -5,7 +5,9 @@ import digitalocean as do
 from colorama import init
 from colorama import Fore, Back, Style
 init()
-
+import ipgetter
+myip = ipgetter.myip()
+print(Fore.GREEN + str(myip))
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 

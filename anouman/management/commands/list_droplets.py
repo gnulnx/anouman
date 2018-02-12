@@ -33,6 +33,6 @@ class Command(BaseCommand):
         for m in Machine.objects.filter(cloudgroup__isnull=True):
             try:
                 do.Droplet.get_object(settings.DO_TOKEN, m.droplet_id)
-                print(Fore.GREEN + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, g))
+                print(Style.DIM + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, g))
             except do.baseapi.NotFoundError:
                 print(Fore.RED + " - %-20s %-20s %-20s %-20s" % (m.name, m.ip, m.droplet_id, g))

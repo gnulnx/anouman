@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import ipgetter
+import time
+import subprocess
 from six.moves import input
 import json
+from colorama import init
+from colorama import Fore, Back, Style
+init(autoreset=True)
 
 from django.db import models
 
@@ -57,31 +62,31 @@ class CloudGroup(models.Model):
         return self.name
 
     def get_context_data(self, **kwargs):
-        white_list = WhiteList.objects.filter(group=self)
+        white_list = self.whitelist.all()
         print("white_list: %s" % white_list)
         if not white_list.count():
             print("Oh no there isn't a white list...")
             myip = ipgetter.myip()
-            print("can we add your local ip: %s" % myip)
+            print("Can I add your local ip: %s" % myip)
             ans = input()
             if 'y' == ans.lower()[0]:
                 wl = WhiteList(ip=myip)
                 wl.save()
                 wl.group.add(self)
-                #WhiteList(name=name, group=self).save()
 
-        white_list = WhiteList.objects.filter(group=self).values_list('ip', flat=True)
+        white_list = self.whitelist.values_list('ip', flat=True)
         print("white_list: %s" % white_list)
     
-        machines = Machine.objects.filter(group=self)
+        machines = self.machines
         frontend_ips = machines.values_list('ip', flat=True)
-        private_ip = machines.values_list('private_ip', flat=True)
+        private_ip = machines.filter(private_ip__isnull=False).values_list('private_ip', flat=True)
 
         context = {
             "WHITE_LIST": list(white_list),
             "FRONT_END_IPS": list(frontend_ips),
             "PRIVATE_IPS": list(private_ip),
         }
+        print(Fore.BLUE + str(context))
         return context
 
     def hosts_file(self):
@@ -89,8 +94,8 @@ class CloudGroup(models.Model):
 
         with open(host_name, "w") as f:
             f.write("[%s]\n" % self.name)
-            for ip in Machine.objects.filter(group=self).values_list('ip', flat=True):
-                f.write("%s\n" % ip)
+            for ip in self.machines.values_list('ip', flat=True):
+                f.write("%s ansible_python_interpreter=/usr/bin/python3\n" % ip)
 
         return host_name
 
@@ -100,6 +105,31 @@ class CloudGroup(models.Model):
         playbooks = (
             '''ansible-playbook  -s -u root ansible/iptables.yml -i %s --extra-vars='%s' ''' % (hosts_file, extra_vars),
         )
+
+        for cmd in playbooks:
+            # Problem here is that you are writing this after the plays have run
+            # TODO This will be deprecated soon
+            print("Running: ", cmd)
+            with open('cmds', 'a') as f:
+                f.write("%s\n" % cmd)
+
+            try:
+                logfile = "%s.log" % (self.name)
+                logfile_handle = open(logfile,"a")
+
+                subprocess.check_call([cmd], stdout=logfile_handle, stderr=logfile_handle, shell=True)
+            except subprocess.CalledProcessError as e:
+                print("\n\n*** Failed on first attempts: %s ***" % cmd)
+                print("\n\n***error: %s ***" % str(e))
+                time.sleep(5)
+                try:
+                    subprocess.check_call([cmd], stdout=logfile_handle, stderr=logfile_handle, shell=True)
+                except subprocess.CalledProcessError as e:
+                    print("\n\n*** Command failed: ", cmd)
+                    print("\n\n*** error: %s" % str(e))
+                    with open('failed', 'a') as f:
+                        f.write("%s\n" % cmd)
+                    raise
 
         print("Made it")
 

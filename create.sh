@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
-
-./manage.py create_droplet --name $1 --monitoring --private --settings=anouman.local
+for var in "$@"
+do
+    echo "Spinning up: $var"
+    ./manage.py create_droplet --name $var --monitoring --private --settings=anouman.local &
+done
