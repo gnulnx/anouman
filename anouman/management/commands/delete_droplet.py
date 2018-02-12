@@ -24,22 +24,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         m = do.Manager(token=settings.DO_TOKEN)
 
-        # TODO Fix this whole thing
+        for _id in options["droplets"]:
+            try:
+                droplet = m.get_droplet(_id)
+                droplet.destroy()
+                print(Fore.GREEN + " - Droplet %s has been destroyed" % _id)
+            except do.baseapi.NotFoundError:
+                print(Fore.RED + " - Droplet %s not found on digitial ocean" % _id)
 
-        try:
-            droplet = m.get_droplet(options["droplets"])
-            droplet.destroy()
-            print(Fore.GREEN + " - Droplet %s has been destroyed" % options["droplets"])
-        except do.baseapi.NotFoundError:
-            print(Fore.RED + " - Droplet %s not found on digitial ocean" % options["droplets"])
 
-
-        # First check that we have a matching Machine in the local database
-        machine = None
-        try:
-            machine = Machine.objects.get(droplet_id=options["droplets"])
-            machine.delete()
-            print(Fore.GREEN + " - Machine delete from local database")
-        except Machine.DoesNotExist:
-            print(Fore.RED + " - There is no Local Machine with droplets=%s" % options["droplets"])
-            sys.exit(1)
+            # First check that we have a matching Machine in the local database
+            machine = None
+            try:
+                machine = Machine.objects.get(droplet_id=_id)
+                machine.delete()
+                print(Fore.GREEN + " - Machine delete from local database")
+            except Machine.DoesNotExist:
+                print(Fore.RED + " - There is no Local Machine with droplets=%s" % _id)
+                sys.exit(1)
