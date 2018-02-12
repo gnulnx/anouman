@@ -54,6 +54,7 @@ class CloudGroup(models.Model):
     Basically a firewall or security group.
     """
     name = models.CharField(max_length=32, blank=False, null=False)
+    firewall = models.BooleanField(default=False)
     sshkeys = models.ManyToManyField('SSHKey')
     whitelist = models.ManyToManyField('IPAddress')
     machines = models.ManyToManyField('Machine')
@@ -70,9 +71,9 @@ class CloudGroup(models.Model):
             print("Can I add your local ip: %s" % myip)
             ans = input()
             if 'y' == ans.lower()[0]:
-                wl = WhiteList(ip=myip)
+                wl, _ = IPAddress.objects.get_or_create(ip=myip)
                 wl.save()
-                wl.group.add(self)
+                self.whitelist.add(wl)
 
         white_list = self.whitelist.values_list('ip', flat=True)
         print("white_list: %s" % white_list)
@@ -131,5 +132,7 @@ class CloudGroup(models.Model):
                         f.write("%s\n" % cmd)
                     raise
 
-        print("Made it")
+        self.firewall = True
+        self.save()
+        print(Fore.GREEN + "- Firewall applied")
 

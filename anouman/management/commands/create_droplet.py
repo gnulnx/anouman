@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 from anouman.utils import get_keys
-from cloudgroup.models import Machine
+from cloudgroup.models import Machine, CloudGroup
 
 
 class Command(BaseCommand):
@@ -26,6 +26,7 @@ class Command(BaseCommand):
         parser.add_argument("--image", help="The digital ocean image type", default="ubuntu-16-04-x64")
         parser.add_argument("--monitoring", help="Enable/Disable monitoring.", action="store_true")
         parser.add_argument("--private", help="Enable private networking", action="store_true")
+        parser.add_argument("--group", help="Add to Cloud Group.  Group created if not found", action="store", default="")
 
 
     def create_droplet(self, options, **kwargs):
@@ -85,6 +86,12 @@ class Command(BaseCommand):
             droplet_id=droplet.id,
         )
         machine.save()
+        if options["group"]:
+            group, created = CloudGroup.objects.get_or_create(name=options["group"])
+            if created:
+                print(Fore.GREEN + " - CloudGroup: %s was created" % group.name)
+            group.machines.add(machine)
+            print(Fore.GREEN + " - machine added to CloudGroup %s" % group.name)
 
         cmd = '''ssh -o "StrictHostKeyChecking no" -A root@%s "echo ping -> pong"''' % droplet.ip_address
         start = time()

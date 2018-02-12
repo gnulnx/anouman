@@ -4,7 +4,7 @@
 -A INPUT -i eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -i eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
-# WHITE_LIST
+# WHITE LIST
 # Special list of ip addresses that can ssh to each machine
 {% for ip in WHITE_LIST %}
 -A INPUT -s {{ip}} -i eth0 -j ACCEPT

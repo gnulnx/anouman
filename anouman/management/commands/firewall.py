@@ -16,9 +16,9 @@ from cloudgroup.models import Machine, CloudGroup
 class Command(BaseCommand):
     help = 'Create a digitial ocean droplet'
     def add_arguments(self, parser):
-        parser.add_argument("--name", help="The name of the droplet")
+        parser.add_argument("--group", help="The name of the CloudGroup to apply firewall rules to")
 
     def handle(self, *args, **options):
-        g = CloudGroup.objects.get(name=options["name"])
+        g = CloudGroup.objects.get(name=options["group"])
         g.get_context_data()
         g.provision()

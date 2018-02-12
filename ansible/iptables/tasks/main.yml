@@ -4,5 +4,5 @@
 - name: "Flush the current iptables"
   shell: /sbin/iptables -F
 
-#- name: "Install the new iptables"
-#  shell:  /sbin/iptables-restore < /etc/iptables_rules
+- name: "Install the new iptables"
+  shell:  /sbin/iptables-restore < /etc/iptables_rules
