@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from cloudgroup.models import SSHKey, IPAddress, Machine, CloudGroup
+from anouman.models import SSHKey, IPAddress, Machine, CloudGroup
 
 
 class SSHKeyAdmin(admin.ModelAdmin):
