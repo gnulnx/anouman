@@ -9,7 +9,7 @@ init()
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
-from cloudgroup.models import Machine
+from anouman.models import Machine
 from anouman.utils import get_keys
 
 class Command(BaseCommand):

@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 from anouman.utils import get_keys
-from cloudgroup.models import Machine, CloudGroup
+from anouman.models import Machine, CloudGroup
 
 
 class Command(BaseCommand):
